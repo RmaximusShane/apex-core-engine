@@ -165,12 +165,12 @@ if __name__ == "__main__":
         }
         </style>
         """,
-        unsafe_allow_index=True
+        unsafe_allow_html=True
     )
 
     # UI Header
-    st.markdown('<p class="tech-header">⚡ APEX-CORE-X V4 ⚡</p>', unsafe_allow_index=True)
-    st.markdown('<p class="tech-subheader">SYSTEM OPERATIONAL // REFLECTION PROTOCOLS ACTIVE</p>', unsafe_allow_index=True)
+    st.markdown('<p class="tech-header">⚡ APEX-CORE-X V4 ⚡</p>', unsafe_allow_html=True)
+    st.markdown('<p class="tech-subheader">SYSTEM OPERATIONAL // REFLECTION PROTOCOLS ACTIVE</p>', unsafe_allow_html=True)
     st.divider()
 
     # Initialize Engine Once
