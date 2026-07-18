@@ -1,10 +1,10 @@
 import os
 import sys
 import json
+import time
 import requests
 from dotenv import load_dotenv
 import streamlit as st
-from PIL import Image
 
 load_dotenv()
 
@@ -24,9 +24,6 @@ class ApexCoreEngine:
             "X-Title": "APEX-CORE-X Reflection Engine"
         })
         
-        self.memory_buffer = []
-        self.max_memory_turns = 10  
-        
         self.system_manifesto = (
             "IDENTITY: APEX-CORE-X Central Logic Substrate.\n\n"
             "CRITICAL OPERATING MANIFESTO:\n"
@@ -38,7 +35,6 @@ class ApexCoreEngine:
         )
 
     def _request_silent(self, payload: dict) -> str:
-        """Handles non-streaming, silent requests to keep reflection backgrounded."""
         try:
             response = self.session.post(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -52,19 +48,19 @@ class ApexCoreEngine:
         except Exception as e:
             return f"🚨 [CONNECTION ERROR]: {str(e)}"
 
-    def execute_logic_silent(self, user_prompt: str, active_model: str) -> str:
-        # Synced conversation history mapping
-        self.memory_buffer = []
-        for msg in st.session_state.messages:
-            self.memory_buffer.append({"role": msg["role"], "content": msg["content"]})
+    def execute_logic_silent(self, user_prompt: str, active_model: str, conversation_history: list) -> str:
+        # Build memory frame context from the active session history
+        memory_buffer = []
+        for msg in conversation_history:
+            memory_buffer.append({"role": msg["role"], "content": msg["content"]})
             
-        if len(self.memory_buffer) > self.max_memory_turns:
-            self.memory_buffer = self.memory_buffer[-self.max_memory_turns:]
+        if len(memory_buffer) > 10:
+            memory_buffer = memory_buffer[-10:]
 
         # --- PASS 1: GENERATE SILENT DRAFT ---
         draft_payload = {
             "model": active_model, 
-            "messages": [{"role": "system", "content": self.system_manifesto}] + self.memory_buffer,
+            "messages": [{"role": "system", "content": self.system_manifesto}] + memory_buffer,
             "temperature": 0.3,
             "stream": False
         }
@@ -102,7 +98,7 @@ class ApexCoreEngine:
 # --- STREAMLIT GRAPHICAL USER INTERACTION MATRIX ---
 if __name__ == "__main__":
     st.set_page_config(
-        page_title="APEX-CORE-X // MAINBOARD", 
+        page_title="APEX-CORE-X // TERMINAL", 
         page_icon="⚡", 
         layout="wide"
     )
@@ -127,20 +123,20 @@ if __name__ == "__main__":
         .motherboard-welcome {
             border: 2px dashed #00ffcc;
             background: radial-gradient(circle, #091322 0%, #04060a 100%);
-            padding: 40px;
+            padding: 60px 40px;
             border-radius: 12px;
             box-shadow: 0px 0px 25px rgba(0, 255, 204, 0.15);
             text-align: center;
-            margin-top: 8vh;
+            margin-top: 12vh;
             margin-bottom: 25px;
         }
         
         .apex-glowing-text {
-            font-size: 3.5rem !important;
+            font-size: 4rem !important;
             color: #00ffcc !important;
             text-shadow: 0px 0px 15px rgba(0, 255, 204, 0.8), 0px 0px 30px rgba(0, 229, 255, 0.4);
             margin: 0px !important;
-            letter-spacing: 4px;
+            letter-spacing: 5px;
         }
         
         .welcome-subtitle {
@@ -150,24 +146,13 @@ if __name__ == "__main__":
             margin-top: 15px !important;
         }
 
-        /* Workstation Content Containers */
-        .motherboard-card {
-            background-color: #080d16 !important;
-            border: 1px solid #1e293b !important;
-            border-left: 4px solid #00ffcc !important;
-            border-radius: 6px;
-            padding: 18px;
-            margin-bottom: 15px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.5);
-        }
-
-        /* Component Panels Layout */
+        /* Chat Panel Layout Styles */
         .stChatMessage {
             background-color: #080f1a !important;
             border: 1px solid #112540 !important;
             border-radius: 8px !important;
-            padding: 14px !important;
-            margin-bottom: 12px !important;
+            padding: 16px !important;
+            margin-bottom: 14px !important;
         }
         
         .stChatMessage[data-testid="stChatMessageUser"] {
@@ -184,119 +169,142 @@ if __name__ == "__main__":
         .panel-tag {
             color: #00ffcc;
             text-transform: uppercase;
-            font-size: 1.1rem;
-            margin-bottom: 12px;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
             border-bottom: 2px solid #112540;
-            padding-bottom: 4px;
-            letter-spacing: 1px;
+            padding-bottom: 6px;
+            letter-spacing: 2px;
+        }
+
+        /* Sidebar Customization */
+        section[data-testid="stSidebar"] {
+            background-color: #060a12 !important;
+            border-right: 1px solid #112540 !important;
+        }
+        
+        /* Sidebar History Log Buttons Override */
+        div.element-container button[kind="secondary"] {
+            background-color: #091322 !important;
+            color: #c9d1d9 !important;
+            border: 1px solid #1f3a60 !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+        }
+        div.element-container button[kind="secondary"]:hover {
+            border-color: #00ffcc !important;
+            color: #00ffcc !important;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    # 2. INITIALIZE SESSION CORE LOGIC
+    # 2. STATE STORAGE INITIALIZATION
     if "engine" not in st.session_state:
         st.session_state.engine = ApexCoreEngine()
         
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+    # Master tracking matrix for separate session keys
+    if "all_sessions" not in st.session_state:
+        st.session_state.all_sessions = {}  # Format: { session_timestamp: {"title": str, "messages": list} }
+        
+    if "active_session_id" not in st.session_state:
+        st.session_state.active_session_id = None
 
-    # 3. PREMIUM FREE-TIER FORCED ROUTING MAP
+    # Premium Free-Tier Backend Processing Endpoints
     MODEL_TIERS = {
-        "⚡ Apex 2.5 (Fast Efficiency Free Tier)": "qwen/qwen-2.5-7b-instruct:free",
-        "🚀 Apex 3.1 (High-Capacity Logic Free Tier)": "meta-llama/llama-3.3-70b-instruct:free",
-        "👑 Apex 3.1 Pro (Frontier Reasoning Free Tier)": "deepseek/deepseek-r1:free"
+        "👑 Apex 3.1 Pro (Frontier Reasoning Tier)": "deepseek/deepseek-r1:free",
+        "🚀 Apex 3.1 (High-Capacity Logic Tier)": "meta-llama/llama-3.3-70b-instruct:free",
+        "⚡ Apex 2.5 (Fast Efficiency Tier)": "qwen/qwen-2.5-7b-instruct:free"
     }
 
-    # Sidebar Control Substrate
+    # 3. SIDEBAR CONTROL & LOG HISTORY SUBSTRATE
     with st.sidebar:
         st.markdown("### 🎛️ SYSTEM CONTROLS")
         selected_tier = st.selectbox("OPERATIONAL MODEL MATRIX", list(MODEL_TIERS.keys()))
         target_backend_model = MODEL_TIERS[selected_tier]
         
         st.divider()
-        if st.button("RESET MEMORY BUFFER", use_container_width=True):
-            st.session_state.messages = []
+        
+        # --- NEW CHAT CONTROLLER ---
+        if st.button("➕ INITIALIZE NEW CHAT", use_container_width=True):
+            st.session_state.active_session_id = None
             st.rerun()
-
-    # 4. HORIZONTAL ADVANCED WORKSPACE SPLIT
-    chat_col, array_col = st.columns([5, 4], gap="large")
-
-    with chat_col:
-        st.markdown('<div class="panel-tag">🧬 APEX LOGIC CONSOLE CORE</div>', unsafe_allow_html=True)
+            
+        st.divider()
+        st.markdown("### 🗂️ PREVIOUS LOG RECORDS")
         
-        # CONDITIONAL WELCOME GRID: Only renders if no data exists inside the active workspace memory
-        if not st.session_state.messages:
-            st.markdown(
-                """
-                <div class="motherboard-welcome">
-                    <p class="apex-glowing-text">APEX CORE</p>
-                    <p class="welcome-subtitle">SYSTEM OPERATIONAL // ARCHITECTURE STABLE // INPUT PENDING</p>
-                </div>
-                """, 
-                unsafe_allow_html=True
-            )
-        
-        # PERSISTENT CHAT HISTORY RENDER: Positioned outside processing checks to safeguard execution history layout
-        chat_feed_viewport = st.container()
+        # Render past conversations as selectable high-tech history logs
+        if not st.session_state.all_sessions:
+            st.write("_No localized log threads detected._")
+        else:
+            for sess_id in sorted(st.session_state.all_sessions.keys(), reverse=True):
+                sess_data = st.session_state.all_sessions[sess_id]
+                # Highlight active session visually or label it
+                btn_label = f"📟 {sess_data['title']}"
+                if st.button(btn_label, key=f"nav_{sess_id}", use_container_width=True):
+                    st.session_state.active_session_id = sess_id
+                    st.rerun()
+
+    # 4. CHAT LOGIC VIEWPORT FRAMEWORK
+    st.markdown('<div class="panel-tag">🧬 APEX COMPUTE CONSOLE LOG</div>', unsafe_allow_html=True)
+    
+    # Extract the current active sequence arrays
+    current_id = st.session_state.active_session_id
+    if current_id and current_id in st.session_state.all_sessions:
+        active_messages = st.session_state.all_sessions[current_id]["messages"]
+    else:
+        active_messages = []
+
+    # CONDITIONAL WELCOME SCREEN: Only loads when the viewing terminal array is empty
+    if not active_messages:
+        st.markdown(
+            """
+            <div class="motherboard-welcome">
+                <p class="apex-glowing-text">APEX CORE</p>
+                <p class="welcome-subtitle">SYSTEM OPERATIONAL // ARCHITECTURE STABLE // LOG ENTRY PENDING</p>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+
+    # PERSISTENT DISPLAY FEED
+    chat_feed_viewport = st.container()
+    with chat_feed_viewport:
+        for msg in active_messages:
+            with st.chat_message(msg["role"]):
+                st.markdown(f"**{msg['content']}**")
+
+    # Command Execution Parsing Point
+    if user_prompt := st.chat_input("Inject instruction parameters..."):
+        # If no session initialized, construct a fresh storage slot
+        if st.session_state.active_session_id is None:
+            new_id = str(time.time())
+            # Capture first chunk of user prompt to serve as sidebar tab log title
+            parsed_title = user_prompt[:22] + "..." if len(user_prompt) > 22 else user_prompt
+            st.session_state.all_sessions[new_id] = {
+                "title": parsed_title.upper(),
+                "messages": []
+            }
+            st.session_state.active_session_id = new_id
+            current_id = new_id
+            active_messages = st.session_state.all_sessions[current_id]["messages"]
+
+        # Append user parameter entry row
+        active_messages.append({"role": "user", "content": user_prompt})
         with chat_feed_viewport:
-            for msg in st.session_state.messages:
-                with st.chat_message(msg["role"]):
-                    st.markdown(f"**{msg['content']}**")
+            with st.chat_message("user"):
+                st.markdown(f"**{user_prompt}**")
 
-        # Command Entry Substrate Loop
-        if user_prompt := st.chat_input("Inject instruction parameters..."):
-            with chat_feed_viewport:
-                with st.chat_message("user"):
-                    st.markdown(f"**{user_prompt}**")
-                st.session_state.messages.append({"role": "user", "content": user_prompt})
-
-                # Call Dual-Pass Metacognition Core
-                with st.chat_message("assistant"):
-                    output_placeholder = st.empty()
-                    with st.spinner("⚡ [ROUTING CIRCUITS VIA INTERNAL METACOGNITIVE LOOP]..."):
-                        computed_result = st.session_state.engine.execute_logic_silent(user_prompt, target_backend_model)
-                    output_placeholder.markdown(f"**{computed_result}**")
-                    
-                st.session_state.messages.append({"role": "assistant", "content": computed_result})
-            
-            # Instantly rerun context to completely collapse the conditional greeting card on entry
-            if len(st.session_state.messages) <= 2:
-                st.rerun()
-
-    with array_col:
-        st.markdown('<div class="panel-tag">🎚️ MULTIMODAL PRODUCTION ARRAY</div>', unsafe_allow_html=True)
+            # Route calculation strings directly to backend evaluation loop
+            with st.chat_message("assistant"):
+                output_placeholder = st.empty()
+                with st.spinner("⚡ [ROUTING CIRCUITS VIA INTERNAL METACOGNITIVE LOOP]..."):
+                    computed_result = st.session_state.engine.execute_logic_silent(
+                        user_prompt, target_backend_model, active_messages
+                    )
+                output_placeholder.markdown(f"**{computed_result}**")
+                
+            active_messages.append({"role": "assistant", "content": computed_result})
         
-        # Workstation Action Interfaces
-        img_tab, aud_tab, vid_tab = st.tabs(["🖼️ IMAGE UTILITY", "🎵 AUDIO ENGINE", "🎬 VIDEO ARRAY"])
-        
-        with img_tab:
-            st.markdown('<div class="motherboard-card">', unsafe_allow_html=True)
-            st.markdown("**IMAGE EDITING & SYNTHESIS MODULE**")
-            img_in = st.text_input("Asset Compile Matrix Prompt:", placeholder="Define visual elements...", key="img_p")
-            img_upload = st.file_uploader("Upload Image Source Feed:", type=["png", "jpg", "jpeg"])
-            img_action = st.radio("Execution Path:", ["Generate Fresh Visual", "Modify Source Layer Matrix"], horizontal=True)
-            if st.button("RUN IMAGE SUBSTRATE ROUTINE", use_container_width=True):
-                st.info("Processing target image coordinates...")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with aud_tab:
-            st.markdown('<div class="motherboard-card">', unsafe_allow_html=True)
-            st.markdown("**AUDIO RENDERING & WAVEFORM SPLITTER**")
-            aud_in = st.text_input("Acoustic Spectrum Prompt:", placeholder="Tempo, instrumentation, arrangement specs...", key="aud_p")
-            aud_upload = st.file_uploader("Upload Audio Source Feed:", type=["mp3", "wav", "mid"])
-            aud_action = st.selectbox("Selected Processing Matrix:", ["Isolate Vocals / Extract Beat", "Compile Algorithmic MIDI Output"])
-            if st.button("RUN AUDIO SUBSTRATE ROUTINE", use_container_width=True):
-                st.info("Parsing audio data blocks...")
-            st.markdown('</div>', unsafe_allow_html=True)
-            
-        with vid_tab:
-            st.markdown('<div class="motherboard-card">', unsafe_allow_html=True)
-            st.markdown("**KINETIC VIDEO CLIPPING & SYNTHESIS**")
-            vid_in = st.text_input("Kinetic Frame Prompt:", placeholder="Camera movements, lighting style, runtime...", key="vid_p")
-            vid_upload = st.file_uploader("Upload Video Source Feed:", type=["mp4", "mov"])
-            vid_action = st.select_slider("Target Interpolation Density:", options=["30 FPS Output", "60 FPS Production Master"])
-            if st.button("RUN VIDEO SUBSTRATE ROUTINE", use_container_width=True):
-                st.info("Compiling frame clusters...")
-            st.markdown('</div>', unsafe_allow_html=True)
+        # Instant refresh coordinates layout nodes perfectly on completion
+        st.rerun()
