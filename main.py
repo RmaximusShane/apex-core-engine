@@ -4,6 +4,7 @@ import json
 import requests
 from dotenv import load_dotenv
 import streamlit as st
+from PIL import Image
 
 load_dotenv()
 
@@ -125,83 +126,197 @@ class ApexCoreEngine:
 # --- STREAMLIT GRAPHICAL USER INTERACTION MATRIX ---
 if __name__ == "__main__":
     st.set_page_config(
-        page_title="APEX-CORE-X", 
+        page_title="APEX-CORE-X // SUBSTRATE", 
         page_icon="⚡", 
-        layout="centered"
+        layout="wide"  # Converted to wide screen to look like a high-tech console layout
     )
 
-    # Custom Tech Styling (Web Design UI Elements)
+    # High-Tech Cyber Motherboard Theme CSS Injection
     st.markdown(
         """
         <style>
-        /* General background adjustments */
+        /* Force Deep Cyber Obsidian Background globally */
         .stApp {
-            background-color: #0d1117;
-            color: #c9d1d9;
+            background-color: #05070a !important;
+            color: #e2e8f0 !important;
+            font-family: 'Courier New', Courier, monospace !important;
         }
-        /* Custom Header styling */
-        .tech-header {
-            font-family: 'Courier New', Courier, monospace;
-            color: #58a6ff;
+        
+        /* Make body text globally distinct and highly readable */
+        p, span, label, li {
+            font-weight: 600 !important;
+            letter-spacing: 0.5px;
+        }
+
+        /* Top Header Board Layout Styling */
+        .tech-title-container {
+            border: 2px solid #00e5ff;
+            background: linear-gradient(90deg, #09121f 0%, #05070a 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 0px 20px rgba(0, 229, 255, 0.25);
+            margin-bottom: 25px;
             text-align: center;
-            font-size: 2.2rem;
-            font-weight: bold;
-            margin-bottom: 0px;
+        }
+        .tech-header {
+            color: #00e5ff !important;
+            font-size: 2.8rem !important;
+            font-weight: 900 !important;
+            text-shadow: 0px 0px 12px rgba(0, 229, 255, 0.6);
+            margin: 0px !important;
         }
         .tech-subheader {
-            font-family: 'Courier New', Courier, monospace;
-            color: #8b949e;
-            text-align: center;
-            font-size: 0.9rem;
-            margin-bottom: 20px;
+            color: #38bdf8 !important;
+            font-size: 1rem !important;
+            font-weight: bold !important;
+            letter-spacing: 3px;
+            margin-top: 5px !important;
         }
-        /* Style chat inputs and boxes slightly darker */
-        .stChatMessage {
-            background-color: #161b22 !important;
-            border: 1px solid #30363d;
+
+        /* High Tech Gemini Column Custom Grid styling */
+        .motherboard-card {
+            background-color: #09111c !important;
+            border: 1px solid #1e293b !important;
+            border-left: 4px solid #00e5ff !important;
             border-radius: 8px;
-            padding: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Customize Streamlit built-in chat elements to blend with Gemini Dark theme */
+        .stChatMessage {
+            background-color: #0b1320 !important;
+            border: 1px solid #1e3a8a !important;
+            border-radius: 12px !important;
+            padding: 16px !important;
+            margin-bottom: 15px !important;
+            box-shadow: 0px 2px 8px rgba(0, 229, 255, 0.05) !important;
+        }
+        
+        .stChatMessage[data-testid="stChatMessageUser"] {
+            border-left: 4px solid #38bdf8 !important;
+            background-color: #0d1b2a !important;
+        }
+        
+        /* Input Box Styling Fixes */
+        .stChatInput textarea {
+            background-color: #09121f !important;
+            color: #ffffff !important;
+            border: 1px solid #00e5ff !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Standardizing bold headers inside blocks */
+        .section-tag {
+            color: #00e5ff;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 1.1rem;
             margin-bottom: 10px;
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 5px;
         }
         </style>
         """,
         unsafe_allow_html=True
     )
 
-    # UI Header
-    st.markdown('<p class="tech-header">⚡ APEX-CORE-X V4 ⚡</p>', unsafe_allow_html=True)
-    st.markdown('<p class="tech-subheader">SYSTEM OPERATIONAL // REFLECTION PROTOCOLS ACTIVE</p>', unsafe_allow_html=True)
-    st.divider()
+    # Render Main Dashboard Header
+    st.markdown(
+        """
+        <div class="tech-title-container">
+            <p class="tech-header">⚡ APEX-CORE-X ENGINE v4.0 ⚡</p>
+            <p class="tech-subheader">MULTIMODAL REFLECTION FRAMEWORK // CORE ACTIVE</p>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
 
-    # Initialize Engine Once
+    # Initialize Engine Once within context
     if "engine" not in st.session_state:
         st.session_state.engine = ApexCoreEngine()
         
-    # Persistent Web Chat History
+    # Persistent Web Chat History Setup
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Display Conversation History
-    for msg in st.session_state.messages:
-        with st.chat_message(msg["role"]):
-            st.write(msg["content"])
+    # --- GEMINI SPLIT LAYOUT SUBSYSTEM ---
+    # Column 1 houses the Gemini Core Chat Terminal, Column 2 houses the Multimodal Generation/Editing Array
+    chat_col, media_col = st.columns([5, 4], gap="large")
 
-    # User Chat Entry Point
-    if user_input := st.chat_input("🧬 System Query..."):
-        # Display user question
-        with st.chat_message("user"):
-            st.write(user_input)
-        st.session_state.messages.append({"role": "user", "content": user_input})
+    with chat_col:
+        st.markdown('<div class="section-tag">🧬 CENTRAL LOGIC FEED (GEMINI PROTOCOL)</div>', unsafe_allow_html=True)
+        
+        # Scrolling Chat Substrate Container
+        chat_container = st.container()
+        with chat_container:
+            for msg in st.session_state.messages:
+                with st.chat_message(msg["role"]):
+                    st.markdown(f"**{msg['content']}**")
 
-        # Process and deliver polished output
-        with st.chat_message("assistant"):
-            status_container = st.empty()
+        # User Input entry point fixed cleanly below message feed
+        if user_input := st.chat_input("Input prompt parameters..."):
+            with chat_container:
+                # Display current input row
+                with st.chat_message("user"):
+                    st.markdown(f"**{user_input}**")
+                st.session_state.messages.append({"role": "user", "content": user_input})
+
+                # Compute Final output through Metacognition loops
+                with st.chat_message("assistant"):
+                    status_placeholder = st.empty()
+                    with st.spinner("⚡ [ENGAGING MOTHERBOARD CIRCUIT PARALLEL REFLECTION]..."):
+                        final_output = st.session_state.engine.execute_logic_silent(user_input)
+                    status_placeholder.markdown(f"**{final_output}**")
+                    
+                st.session_state.messages.append({"role": "assistant", "content": final_output})
+
+    with media_col:
+        st.markdown('<div class="section-tag">🎛️ MULTIMODAL GENERATION & EDITING ARRAY</div>', unsafe_allow_html=True)
+        
+        # --- TAB CONTROLS FOR IMAGE, AUDIO, VIDEO GENERATION/EDITING ---
+        img_tab, aud_tab, vid_tab = st.tabs(["🖼️ IMAGE SUBSTRATE", "🎵 AUDIO ENGINE", "🎬 VIDEO PROCESSOR"])
+        
+        with img_tab:
+            st.markdown('<div class="motherboard-card">', unsafe_allow_html=True)
+            st.markdown("**IMAGE MANIPULATION & SYNTHESIS UNIT**")
             
-            # Show a premium high-tech status loading spinner
-            with st.spinner("⚡ [COMPUTING CONSTRAINTS & ENGAGING INTERNAL METRIC EVALUATION]..."):
-                final_output = st.session_state.engine.execute_logic_silent(user_input)
-                
-            # Deliver the final polished output instantly 
-            status_container.write(final_output)
+            # Setup layout nodes for generation and upload inputs
+            img_prompt = st.text_input("🎨 Asset Synthesis Prompt:", placeholder="Describe the image matrix to compile...")
+            img_file = st.file_uploader("📥 Source Image Feed (Upload for Editing):", type=["png", "jpg", "jpeg"], key="img_edit")
             
-        st.session_state.messages.append({"role": "assistant", "content": final_output})
+            img_op = st.radio("🛠️ Operation Vector:", ["Compile New Image", "Apply Filter / Edit Matrix", "Deep Structural Scan"], horizontal=True)
+            
+            if st.button("EXECUTE IMAGE LOGIC ROUTINE", use_container_width=True):
+                st.info("⚙️ Image generation/editing pipeline routing active...")
+                # Multimodal Hook: Insert image generation API call or PIL matrix manipulation script here
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with aud_tab:
+            st.markdown('<div class="motherboard-card">', unsafe_allow_html=True)
+            st.markdown("**AUDIO SYNTHESIS & WAV SUBSTRATE**")
+            
+            aud_prompt = st.text_input("🎵 Audio Beat/Vocal Prompt:", placeholder="Specify tempo, genre, or key changes...")
+            aud_file = st.file_uploader("📥 Source Audio Track (Upload for Stripping/Editing):", type=["mp3", "wav", "mid"], key="aud_edit")
+            
+            aud_op = st.selectbox("🛠️ Target Processing Function:", ["Render Instrumental Beat", "Vocal Isolation Splitter", "MIDI Progression Compilation"])
+            
+            if st.button("EXECUTE AUDIO LOGIC ROUTINE", use_container_width=True):
+                st.info("⚙️ Audio sequence parsing initiated...")
+                # Multimodal Hook: Connect your FL Studio style file handling or audio generation endpoints here
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+        with vid_tab:
+            st.markdown('<div class="motherboard-card">', unsafe_allow_html=True)
+            st.markdown("**VIDEO EDITING & KINETIC SYNTHESIS**")
+            
+            vid_prompt = st.text_input("🎬 Kinetic Video Prompt:", placeholder="Detail camera action, pacing, or sequence specs...")
+            vid_file = st.file_uploader("📥 Source Video Feed (Upload for Clipping):", type=["mp4", "mov", "avi"], key="vid_edit")
+            
+            vid_op = st.select_slider("⚡ Rendering Frame Interpolation Target:", options=["30 FPS Draft", "60 FPS Production", "Cinematic Upscale"])
+            
+            if st.button("EXECUTE VIDEO LOGIC ROUTINE", use_container_width=True):
+                st.info("⚙️ Compiling video render clusters...")
+                # Multimodal Hook: Connect custom cinematic generation or video clipping parameters here
+            st.markdown('</div>', unsafe_allow_html=True)
