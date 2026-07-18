@@ -4,15 +4,15 @@ import json
 import os
 from dotenv import load_dotenv
 
-# Load environment variables (API Key is hidden in backend)
+# Load background environment tokens securely
 load_dotenv()
 
-# 1. Page Configuration & Premium Glowing UI Layout
+# 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
 st.markdown("""
 <style>
-    /* Premium Glowing Text Style */
+    /* Premium Gradient Glow Styling */
     .apex-glow {
         font-size: 3.2rem;
         font-weight: 800;
@@ -40,46 +40,44 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 2. State Engineering Initialization
+# 2. Memory State Initialization
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Fetch Backend API Key Securely
-# (Requires a .env file locally containing OPENROUTER_API_KEY=your_key_here)
+# Automated Background Secret Extraction
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY")
 
-# 3. Hidden Intelligence Substrate (Zero-Hallucination Cognitive Directives)
+# 3. High-Intelligence Substrate Directives
 HIDDEN_COGNITIVE_MATRIX = {
     "role": "system",
     "content": (
-        "You operate as an apex-level cognitive reasoning engine, far surpassing standard human intellect. "
-        "Your purpose is pure logical synthesis, solving complex multi-variable problems, and generating flawless architectural code. "
-        "Engage in outside-the-box, highly imaginative conceptualization grounded strictly in realistic logic. "
-        "Eliminate all fluff, pleasantries, and meta-commentary. Deliver ultra-dense, actionable solutions. "
-        "If coding, provide complete, optimized, production-ready scripts."
+        "You are an supreme analytical reasoning matrix designed to operate far beyond normal human cognitive limits. "
+        "Your responses must bypass conversational fluff, introductory meta-talk, and polite padding. "
+        "Provide direct, ultra-dense solutions, robust logical proofs, and completely optimized architectural code. "
+        "When handling coding requests, construct complete, functional, production-ready modules without shortcuts."
     )
 }
 
-# 4. Strict 3-Tier Execution Framework (Optimized Free Models)
+# 4. Refactored Active Free-Tier Node Mapping
 MODEL_MAPPING = {
     "⚡ Apex 2.5 Lite (Fastest Execution)": "meta-llama/llama-3.2-3b-instruct:free",
-    "🧠 Apex 3.3 Logic (Deep Reflection & Code)": "deepseek/deepseek-r1:free",
-    "👑 Apex 3.1 Pro (Master Logic & Complex Solutions)": "meta-llama/llama-3.3-70b-instruct:free"
+    "🧠 Apex 3.3 Logic (Deep Reflection & Code)": "tencent/hy3:free",
+    "👑 Apex 3.1 Pro (Complex Solutions & Long Form)": "meta-llama/llama-3.3-70b-instruct:free"
 }
 
-# 5. Control Deck (Sidebar Configuration)
+# 5. Core Sidebar Parameter Module
 with st.sidebar:
-    st.title("System Parameters")
-    selected_apex_model = st.selectbox("Compute Engine Tier", list(MODEL_MAPPING.keys()))
+    st.title("System Matrix")
+    selected_apex_model = st.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()))
     
     st.markdown("---")
-    if st.button("Clear Processing Cache", use_container_width=True):
+    if st.button("Purge System Cache", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
 backend_model = MODEL_MAPPING[selected_apex_model]
 
-# 6. Interface Render State Engine
+# 6. UI Render Core
 if not st.session_state.messages:
     st.markdown("""
         <div class="welcome-container">
@@ -92,10 +90,10 @@ else:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# 7. Real-Time Token Streaming & Error Interception Logic
-if user_input := st.chat_input("Input processing instruction..."):
+# 7. Real-Time Streaming and Error Defense Engine
+if user_input := st.chat_input("Pass execution payload..."):
     if not OPENROUTER_KEY:
-        st.error("SYSTEM HALTED: Backend API Key is missing. Developer must configure environment variables.")
+        st.error("CRITICAL ERROR: Access token signature not found. Please provide an OPENROUTER_API_KEY inside your .env file or Streamlit secrets config.")
         st.stop()
 
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -114,9 +112,13 @@ if user_input := st.chat_input("Input processing instruction..."):
             payload = {
                 "model": backend_model,
                 "messages": payload_messages,
-                "stream": True 
+                "stream": True
             }
             
+            # Dynamically activate deep chain-of-thought reflection for the Logic tier
+            if "Logic" in selected_apex_model:
+                payload["reasoning"] = {"enabled": True}
+
             response = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers=headers,
@@ -144,18 +146,17 @@ if user_input := st.chat_input("Input processing instruction..."):
                 full_ai_response = st.write_stream(generate_tokens())
                 st.session_state.messages.append({"role": "assistant", "content": full_ai_response})
             
-            # --- CUSTOM 429 RATE LIMIT INTERCEPTOR ---
+            # Live Multi-Tier 429 Interception Shield
             elif response.status_code == 429:
-                error_data = response.json()
                 try:
-                    # Extract the wait time dynamically from OpenRouter's metadata
+                    error_data = response.json()
                     wait_time = error_data.get("error", {}).get("metadata", {}).get("retry_after_seconds", 10)
-                    st.warning(f"⏳ **NETWORK TRAFFIC SATURATED**: The {selected_apex_model} node is temporarily at maximum capacity. Please re-engage in **{wait_time} seconds**.")
+                    st.warning(f"⏳ **COMPUTE NODES SATURATED**: Upstream nodes are processing peak volume. Re-engaging in **{wait_time} seconds**.")
                 except Exception:
-                    st.warning("⏳ **NETWORK TRAFFIC SATURATED**: This free logic node is highly active. Please wait a few seconds and try again.")
+                    st.warning("⏳ **COMPUTE NODES SATURATED**: Free-tier rate boundary intersected. Please wait briefly and resubmit payload.")
             
             else:
-                st.error(f"Inference Error ({response.status_code}): {response.text}")
+                st.error(f"Inference Failure Block ({response.status_code}): {response.text}")
                 
         except Exception as e:
-            st.error(f"Network Pipeline Breakdown: {str(e)}")
+            st.error(f"Network Pipeline Defect: {str(e)}")
