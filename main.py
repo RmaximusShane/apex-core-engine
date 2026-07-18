@@ -8,21 +8,38 @@ from dotenv import load_dotenv
 # Load background environment tokens securely
 load_dotenv()
 
-# 1. Page Configuration & Premium Glowing UI Layout
+# 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
+# Custom CSS to inject the neon "X" logo, hide standard headers, and refine components
 st.markdown("""
 <style>
-    /* Premium Gradient Glow Styling */
+    /* Neon Glow Styling for the Brand Identity */
+    .neon-logo {
+        font-size: 2.4rem;
+        font-weight: 900;
+        color: #FFFFFF;
+        text-shadow: 0 0 5px #00f3ff, 0 0 10px #00f3ff, 0 0 20px #00f3ff;
+        font-family: 'Courier New', Courier, monospace;
+        margin-right: 12px;
+        user-select: none;
+    }
+    .brand-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.5px;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
     .apex-glow {
-        font-size: 3.2rem;
+        font-size: 3.5rem;
         font-weight: 800;
-        background: linear-gradient(45deg, #FF4B4B, #FF8F00, #4285F4);
+        background: linear-gradient(45deg, #00f3ff, #4285F4, #FF00FF);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
         padding: 20px 0;
-        filter: drop-shadow(0px 2px 10px rgba(255, 75, 75, 0.3));
+        filter: drop-shadow(0px 2px 8px rgba(0, 243, 255, 0.2));
     }
     .welcome-container {
         display: flex;
@@ -38,12 +55,32 @@ st.markdown("""
         font-weight: 400;
         letter-spacing: 0.5px;
     }
+    /* Clean sidebar adjustments */
+    div[data-testid="stSidebarNav"] {display: none;}
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Memory State Initialization
+# 2. Advanced Multi-Session Memory Initialization
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = {} # Schema: { chat_id: {"title": str, "messages": list} }
+if "current_chat_id" not in st.session_state:
+    st.session_state.current_chat_id = str(time.time())
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
+# Dynamic sync function to capture ongoing states into historical registry
+def sync_active_chat_to_history():
+    if st.session_state.messages:
+        # If the history record doesn't exist yet, derive the title from the first prompt
+        if st.session_state.current_chat_id not in st.session_state.chat_history:
+            first_user_msg = next((m["content"] for m in st.session_state.messages if m["role"] == "user"), "New Engine Log")
+            derived_title = first_user_msg[:24] + "..." if len(first_user_msg) > 24 else first_user_msg
+            st.session_state.chat_history[st.session_state.current_chat_id] = {
+                "title": derived_title,
+                "messages": st.session_state.messages
+            }
+        else:
+            st.session_state.chat_history[st.session_state.current_chat_id]["messages"] = st.session_state.messages
 
 # Automated Background Secret Extraction
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY")
@@ -66,19 +103,51 @@ MODEL_MAPPING = {
     "👑 Apex 3.1 Pro (Master Logic & Complex Solutions)": "meta-llama/llama-3.3-70b-instruct:free"
 }
 
-# 5. Core Sidebar Parameter Module
+# 5. Left Sidebar Deck (Brand Dashboard & Session Memory Control)
 with st.sidebar:
-    st.title("System Matrix")
+    # Rebranded Custom Neon Header Layout
+    st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">Apex</span></div>', unsafe_allow_html=True)
+    
+    # Initialize a clean clean start mechanism
+    if st.button("➕ New Chat", use_container_width=True, type="secondary"):
+        sync_active_chat_to_history()
+        st.session_state.current_chat_id = str(time.time())
+        st.session_state.messages = []
+        st.rerun()
+        
+    st.markdown("---")
+    st.markdown("### Recent")
+    
+    # Render active compilation registry history logs
+    if not st.session_state.chat_history:
+        st.caption("No recent processing matrices recorded.")
+    else:
+        for chat_id, chat_data in list(st.session_state.chat_history.items()):
+            # Visually highlight active running log session
+            is_active = (chat_id == st.session_state.current_chat_id)
+            btn_label = f"💬 {chat_data['title']}"
+            
+            if st.button(btn_label, key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
+                sync_active_chat_to_history()
+                st.session_state.current_chat_id = chat_id
+                st.session_state.messages = chat_data["messages"]
+                st.rerun()
+
+    # Move System Configuration Matrix to the bottom of the control panel
+    st.markdown(" <div style='margin-top: 25vh;'></div> ", unsafe_allow_html=True)
+    st.markdown("---")
+    st.markdown("### Matrix Configuration")
     selected_apex_model = st.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()))
     
-    st.markdown("---")
     if st.button("Purge System Cache", use_container_width=True):
+        st.session_state.chat_history = {}
+        st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
         st.rerun()
 
 backend_model = MODEL_MAPPING[selected_apex_model]
 
-# 6. UI Render Core
+# 6. Main Viewport Render Engine
 if not st.session_state.messages:
     st.markdown("""
         <div class="welcome-container">
@@ -124,7 +193,6 @@ if user_input := st.chat_input("Pass execution payload..."):
         attempt = 0
         stream_processed = False
 
-        # Allocate dynamic notification frame inside assistant chat bubble
         status_frame = st.empty()
 
         while attempt < max_attempts and not stream_processed:
@@ -138,7 +206,7 @@ if user_input := st.chat_input("Pass execution payload..."):
                 
                 # Success Execution Pathway
                 if response.status_code == 200:
-                    status_frame.empty() # Remove any warning states before starting output stream
+                    status_frame.empty()
                     
                     def generate_tokens():
                         for line in response.iter_lines():
@@ -159,6 +227,9 @@ if user_input := st.chat_input("Pass execution payload..."):
                     full_ai_response = st.write_stream(generate_tokens())
                     st.session_state.messages.append({"role": "assistant", "content": full_ai_response})
                     stream_processed = True
+                    
+                    # Log active state updates down into the history log parameters
+                    sync_active_chat_to_history()
                 
                 # Active 429 Rate Limit Interception & Countdown Pathway
                 elif response.status_code == 429:
