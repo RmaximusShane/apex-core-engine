@@ -11,38 +11,43 @@ load_dotenv()
 # 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
-# Custom UI Layout Overrides (Cybernetic Midnight Gradient Theme)
+# Custom UI Layout Overrides (Sleek Minimal Cybernetic Theme)
 st.markdown("""
 <style>
     /* Global Page Background & Text Base Override */
     .stApp {
-        background: radial-gradient(circle at 50% 50%, #0f172a 0%, #070a12 100%) !important;
-        color: #f1f5f9 !important;
+        background: radial-gradient(circle at 50% 50%, #0c101b 0%, #05070f 100%) !important;
+        color: #e2e8f0 !important;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     /* Sidebar Structural Styling */
     section[data-testid="stSidebar"] {
-        background-color: #090d16 !important;
-        border-right: 1px solid #1e293b !important;
+        background-color: #070911 !important;
+        border-right: 1px solid #161f38 !important;
     }
 
-    /* Chat Messages Box Container Tweaks */
+    /* Minimal Stark Chat Messages Box Container Tweaks */
     div[data-testid="stChatMessage"] {
-        background-color: rgba(30, 41, 59, 0.4) !important;
-        border: 1px solid rgba(255, 255, 255, 0.05) !important;
-        border-radius: 8px !important;
-        margin-bottom: 12px !important;
-        padding: 15px !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        background-color: transparent !important;
+        border: none !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+        border-radius: 0px !important;
+        margin-bottom: 0px !important;
+        padding: 24px 12px !important;
+    }
+    
+    /* Slight tint shift for assistant replies to give clean structure */
+    div[data-testid="stChatMessage"][data-testid="stChatMessageContent"] {
+        background-color: rgba(255, 255, 255, 0.01) !important;
     }
 
     /* Input Box Styles */
     div[data-testid="stChatInput"] textarea {
-        background-color: #0f172a !important;
+        background-color: #0d1324 !important;
         color: #00f3ff !important;
-        border: 1px solid #1e293b !important;
-        border-radius: 6px !important;
+        border: 1px solid #161f38 !important;
+        border-radius: 8px !important;
     }
 
     /* Top Sidebar Branding Custom Layout Elements */
@@ -82,7 +87,7 @@ st.markdown("""
         margin-top: 15vh;
     }
     .subtitle {
-        color: #94a3b8;
+        color: #64748b;
         text-align: center;
         font-size: 1.25rem;
         font-weight: 400;
@@ -116,11 +121,9 @@ def sync_active_chat_to_history():
 
 # --- MULTI-KEY POOL EXTRACTION ---
 keys_raw = os.getenv("OPENROUTER_API_KEYS") or st.secrets.get("OPENROUTER_API_KEYS", "")
-# Fallback parse check for old single key variable name
 if not keys_raw:
     keys_raw = os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY", "")
 
-# Clean and split the keys into an indexed array pool
 API_KEY_POOL = [k.strip() for k in keys_raw.split(",") if k.strip()]
 
 # 3. High-Intelligence Substrate Directives
@@ -133,11 +136,11 @@ HIDDEN_COGNITIVE_MATRIX = {
     )
 }
 
-# 4. Core Performance Model Mapping
+# 4. Core Performance Model Mapping (Updated active free models)
 MODEL_MAPPING = {
-    "⚡ Apex 2.5 Lite (Fastest Execution)": "meta-llama/llama-3.2-3b-instruct:free",
-    "🧠 Apex 3.3 Logic (Deep Reflection & Code)": "tencent/hy3:free",
-    "👑 Apex 3.1 Pro (Master Logic & Complex Solutions)": "meta-llama/llama-3.3-70b-instruct:free"
+    "⚡ Apex 2.5 Lite (Fast General Text)": "openai/gpt-oss-20b:free",
+    "🧠 Apex 3.3 Logic (Deep Frontier Reasoning)": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "👑 Apex 3.1 Pro (Advanced Code & Math)": "qwen/qwen3-coder:free"
 }
 
 # 5. Left Sidebar Deck (Brand Dashboard & Session Memory Control)
@@ -169,7 +172,6 @@ with st.sidebar:
     st.markdown("### Matrix Configuration")
     selected_apex_model = st.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()))
     
-    # Show active signature pooling counts
     st.caption(f"Loaded Compute Signatures: Pool [{len(API_KEY_POOL)} keys]")
     
     if st.button("Purge System Cache", use_container_width=True):
@@ -216,7 +218,6 @@ if user_input := st.chat_input("Pass execution payload..."):
         if "Logic" in selected_apex_model:
             payload["reasoning"] = {"enabled": True}
 
-        # Fault Tolerance Controls
         total_keys = len(API_KEY_POOL)
         keys_attempted = 0
         stream_processed = False
@@ -225,9 +226,7 @@ if user_input := st.chat_input("Pass execution payload..."):
 
         status_frame = st.empty()
 
-        # Engine will try rotating keys sequentially up to the total size of your pool
         while keys_attempted < total_keys and not stream_processed:
-            # Safely point to the current active key slot using modulo wrap-around
             current_key = API_KEY_POOL[st.session_state.key_index % total_keys]
             
             headers = {
@@ -243,7 +242,6 @@ if user_input := st.chat_input("Pass execution payload..."):
                     stream=True
                 )
                 
-                # Success Execution Pathway
                 if response.status_code == 200:
                     status_frame.empty()
                     
@@ -268,7 +266,6 @@ if user_input := st.chat_input("Pass execution payload..."):
                     stream_processed = True
                     sync_active_chat_to_history()
                 
-                # Catch 429 Rate limits and immediately rotate to next key without waiting
                 elif response.status_code == 429:
                     keys_attempted += 1
                     try:
@@ -277,13 +274,11 @@ if user_input := st.chat_input("Pass execution payload..."):
                     except Exception:
                         last_wait_time = 12
                     
-                    # Log failure of this key, and increment index to pivot to the next slot instantly
                     status_frame.info(f"🔄 Compute Signature Slot {st.session_state.key_index % total_keys} saturated. Switching lines...")
                     st.session_state.key_index += 1 
-                    time.sleep(0.4) # Micro-pause to prevent instant flooding
+                    time.sleep(0.4)
                     
                 else:
-                    # If it's a completely different error block, print it out cleanly
                     status_frame.error(f"Inference Failure Block ({response.status_code}): {response.text}")
                     break
                     
@@ -291,7 +286,6 @@ if user_input := st.chat_input("Pass execution payload..."):
                 status_frame.error(f"Network Pipeline Defect: {str(pipeline_error)}")
                 break
 
-        # If EVERY key in the pool returns a 429 error, start a unified countdown buffer
         if not stream_processed and keys_attempted >= total_keys:
             global_cooldown_needed = True
             for remaining in range(last_wait_time, 0, -1):
