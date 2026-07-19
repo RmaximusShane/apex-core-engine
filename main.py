@@ -182,12 +182,12 @@ HIDDEN_COGNITIVE_MATRIX = {
     )
 }
 
-# 4. Core Performance Model Mapping (Updated 2026 Free Live Tiers)
+# 4. Core Performance Model Mapping (100% Active Free Tiers)
 MODEL_MAPPING = {
     "🌐 Auto-Shield (Failsafe Free Router)": "openrouter/free",
-    "⚡ Apex 2.5 Lite (Fast General Text)": "meta-llama/llama-3.2-3b-instruct:free",
-    "🧠 Apex 3.3 Logic (Deep Frontier Reasoning)": "google/gemini-2.5-pro:free",
-    "👑 Apex 3.1 Pro (High-Performance Compute)": "qwen/qwen3-coder:free"
+    "🧠 Apex 3.3 Logic (Tencent Reasoning)": "tencent/hy3:free",
+    "⚡ Apex 2.5 Lite (Nvidia Nemotron)": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "👑 Apex 3.1 Pro (Qwen Coder Matrix)": "qwen/qwen3-coder:free"
 }
 
 backend_model = MODEL_MAPPING[st.sidebar.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()), index=0)]
@@ -238,7 +238,6 @@ def sync_active_chat_to_history():
 with st.sidebar:
     st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">APEX</span></div>', unsafe_allow_html=True)
     
-    # Newly Styled Interactive Streamlit Button (Injected with hover scaling and neon gradients above)
     if st.button("➕ New Session", use_container_width=True):
         sync_active_chat_to_history()
         st.session_state.current_chat_id = str(time.time())
