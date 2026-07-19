@@ -11,93 +11,122 @@ load_dotenv()
 # 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
-# Custom UI Layout Overrides (Sleek Minimal Cybernetic Theme)
+# Custom UI Layout Overrides (Simple White Base + Radiant Neon Accents & Pulsing Sidebar)
 st.markdown("""
 <style>
-    /* Global Page Background & Text Base Override */
+    /* Global Page Background Reset to Crisp Clean White */
     .stApp {
-        background: radial-gradient(circle at 50% 50%, #0c101b 0%, #05070f 100%) !important;
-        color: #e2e8f0 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
-    /* Sidebar Structural Styling */
-    section[data-testid="stSidebar"] {
-        background-color: #070911 !important;
-        border-right: 1px solid #161f38 !important;
+    /* Keyframes for Moving/Pulsing Neon Sidebar Glow */
+    @keyframes neonPulse {
+        0% {
+            box-shadow: 4px 0 15px rgba(0, 243, 255, 0.4), 8px 0 30px rgba(0, 243, 255, 0.2);
+            border-right: 2px solid #00f3ff;
+        }
+        50% {
+            box-shadow: 6px 0 25px rgba(255, 0, 255, 0.6), 12px 0 45px rgba(255, 0, 255, 0.3);
+            border-right: 2px solid #ff00ff;
+        }
+        100% {
+            box-shadow: 4px 0 15px rgba(0, 243, 255, 0.4), 8px 0 30px rgba(0, 243, 255, 0.2);
+            border-right: 2px solid #00f3ff;
+        }
     }
 
-    /* Minimal Stark Chat Messages Box Container Tweaks */
+    /* Animated Neon Glowing Sidebar Construction */
+    section[data-testid="stSidebar"] {
+        background-color: #070a13 !important;
+        animation: neonPulse 6s infinite ease-in-out;
+        transition: all 0.5s ease;
+    }
+    
+    /* Ensure text inside dark sidebar remains perfectly legible */
+    section[data-testid="stSidebar"] p, 
+    section[data-testid="stSidebar"] h3, 
+    section[data-testid="stSidebar"] span {
+        color: #f8fafc !important;
+    }
+
+    /* Minimal Clean Chat Interface */
     div[data-testid="stChatMessage"] {
         background-color: transparent !important;
         border: none !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+        border-bottom: 1px solid #e2e8f0 !important;
         border-radius: 0px !important;
         margin-bottom: 0px !important;
-        padding: 24px 12px !important;
+        padding: 24px 16px !important;
     }
     
-    /* Slight tint shift for assistant replies to give clean structure */
-    div[data-testid="stChatMessage"][data-testid="stChatMessageContent"] {
-        background-color: rgba(255, 255, 255, 0.01) !important;
+    /* Elegant Highlight For Text Fields */
+    div[data-testid="stChatMessage"] p {
+        font-size: 1.05rem;
+        line-height: 1.6;
+        color: #0f172a !important;
+        font-weight: 500;
     }
 
-    /* Input Box Styles */
+    /* Input Frame Adjustments */
     div[data-testid="stChatInput"] textarea {
-        background-color: #0d1324 !important;
-        color: #00f3ff !important;
-        border: 1px solid #161f38 !important;
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 2px solid #0f172a !important;
         border-radius: 8px !important;
+        font-weight: 600;
     }
 
-    /* Top Sidebar Branding Custom Layout Elements */
+    /* Bold Elegant Neon Branding Elements */
     .neon-logo {
-        font-size: 2.4rem;
+        font-size: 2.6rem;
         font-weight: 900;
-        color: #FFFFFF;
-        text-shadow: 0 0 5px #00f3ff, 0 0 10px #00f3ff, 0 0 20px #00f3ff;
+        color: #ffffff;
+        text-shadow: 0 0 8px #00f3ff, 0 0 15px #00f3ff;
         font-family: 'Courier New', Courier, monospace;
         margin-right: 12px;
-        user-select: none;
     }
     .brand-title {
         font-size: 1.8rem;
-        font-weight: 700;
+        font-weight: 800;
         color: #ffffff;
-        letter-spacing: 0.5px;
-        font-family: system-ui, -apple-system, sans-serif;
+        letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
     }
 
-    /* Welcome Main Viewport Header Styles */
+    /* High-Impact Neon Text Gradients on Main Screen */
     .apex-glow {
-        font-size: 3.5rem;
-        font-weight: 800;
-        background: linear-gradient(45deg, #00f3ff, #4285F4, #FF00FF);
+        font-size: 4rem;
+        font-weight: 900;
+        background: linear-gradient(90deg, #00f3ff 0%, #ff00ff 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         text-align: center;
-        padding: 20px 0;
-        filter: drop-shadow(0px 2px 8px rgba(0, 243, 255, 0.3));
+        padding: 10px 0;
+        letter-spacing: -1px;
+        filter: drop-shadow(0px 4px 12px rgba(0, 243, 255, 0.2));
     }
     .welcome-container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: 15vh;
+        margin-top: 20vh;
     }
     .subtitle {
-        color: #64748b;
+        color: #475569;
         text-align: center;
-        font-size: 1.25rem;
-        font-weight: 400;
+        font-size: 1.3rem;
+        font-weight: 700;
         letter-spacing: 0.5px;
+        margin-top: 10px;
     }
     div[data-testid="stSidebarNav"] {display: none;}
 </style>
 """, unsafe_allow_html=True)
 
-# 2. Advanced Multi-Session Memory Initialization
+# 2. Memory State Engine Check
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = {}
 if "current_chat_id" not in st.session_state:
@@ -105,12 +134,12 @@ if "current_chat_id" not in st.session_state:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 if "key_index" not in st.session_state:
-    st.session_state.key_index = 0 # Tracks which key in the pool is currently active
+    st.session_state.key_index = 0 
 
 def sync_active_chat_to_history():
     if st.session_state.messages:
         if st.session_state.current_chat_id not in st.session_state.chat_history:
-            first_user_msg = next((m["content"] for m in st.session_state.messages if m["role"] == "user"), "New Engine Log")
+            first_user_msg = next((m["content"] for m in st.session_state.messages if m["role"] == "user"), "New Matrix Build")
             derived_title = first_user_msg[:24] + "..." if len(first_user_msg) > 24 else first_user_msg
             st.session_state.chat_history[st.session_state.current_chat_id] = {
                 "title": derived_title,
@@ -136,32 +165,33 @@ HIDDEN_COGNITIVE_MATRIX = {
     )
 }
 
-# 4. Core Performance Model Mapping (Updated active free models)
+# 4. Core Performance Model Mapping (Updated 2026 Live Free Slots)
 MODEL_MAPPING = {
+    "🌐 Auto-Shield (Failsafe Free Router)": "openrouter/free",
     "⚡ Apex 2.5 Lite (Fast General Text)": "openai/gpt-oss-20b:free",
     "🧠 Apex 3.3 Logic (Deep Frontier Reasoning)": "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "👑 Apex 3.1 Pro (Advanced Code & Math)": "qwen/qwen3-coder:free"
+    "👑 Apex 3.1 Pro (Advanced Code Agent)": "cohere/north-mini-code:free"
 }
 
 # 5. Left Sidebar Deck (Brand Dashboard & Session Memory Control)
 with st.sidebar:
-    st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">Apex</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">APEX</span></div>', unsafe_allow_html=True)
     
-    if st.button("➕ New Chat", use_container_width=True):
+    if st.button("➕ New Session", use_container_width=True):
         sync_active_chat_to_history()
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
         st.rerun()
         
     st.markdown("---")
-    st.markdown("### Recent")
+    st.markdown("### Recent Signatures")
     
     if not st.session_state.chat_history:
-        st.caption("No recent processing matrices recorded.")
+        st.caption("No active sessions cached.")
     else:
         for chat_id, chat_data in list(st.session_state.chat_history.items()):
             is_active = (chat_id == st.session_state.current_chat_id)
-            if st.button(f"💬 {chat_data['title']}", key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
+            if st.button(f"⚡ {chat_data['title']}", key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
                 sync_active_chat_to_history()
                 st.session_state.current_chat_id = chat_id
                 st.session_state.messages = chat_data["messages"]
@@ -169,12 +199,12 @@ with st.sidebar:
 
     st.markdown(" <div style='margin-top: 25vh;'></div> ", unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### Matrix Configuration")
+    st.markdown("### Compute Mapping")
     selected_apex_model = st.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()))
     
-    st.caption(f"Loaded Compute Signatures: Pool [{len(API_KEY_POOL)} keys]")
+    st.caption(f"Signatures Available: Pool [{len(API_KEY_POOL)} keys]")
     
-    if st.button("Purge System Cache", use_container_width=True):
+    if st.button("Purge Engine Memory", use_container_width=True):
         st.session_state.chat_history = {}
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
@@ -187,8 +217,8 @@ backend_model = MODEL_MAPPING[selected_apex_model]
 if not st.session_state.messages:
     st.markdown("""
         <div class="welcome-container">
-            <h1 class="apex-glow">Hello, I'm Apex</h1>
-            <p class="subtitle">How can I help you build, create, or synthesize today?</p>
+            <h1 class="apex-glow">APEX COMPUTE CORE</h1>
+            <p class="subtitle">Systems configured. Awaiting instructions.</p>
         </div>
     """, unsafe_allow_html=True)
 else:
@@ -197,9 +227,9 @@ else:
             st.markdown(msg["content"])
 
 # 7. Real-Time Streaming, Key-Rotation, and Self-Healing Engine
-if user_input := st.chat_input("Pass execution payload..."):
+if user_input := st.chat_input("Input processing instruction payload..."):
     if not API_KEY_POOL:
-        st.error("CRITICAL ERROR: No API keys detected in your background .env profile config.")
+        st.error("CRITICAL ERROR: No API keys detected in your background environment profile configuration.")
         st.stop()
 
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -274,7 +304,7 @@ if user_input := st.chat_input("Pass execution payload..."):
                     except Exception:
                         last_wait_time = 12
                     
-                    status_frame.info(f"🔄 Compute Signature Slot {st.session_state.key_index % total_keys} saturated. Switching lines...")
+                    status_frame.info(f"🔄 Line {st.session_state.key_index % total_keys} saturated. Rotating signatures...")
                     st.session_state.key_index += 1 
                     time.sleep(0.4)
                     
@@ -290,8 +320,8 @@ if user_input := st.chat_input("Pass execution payload..."):
             global_cooldown_needed = True
             for remaining in range(last_wait_time, 0, -1):
                 status_frame.warning(
-                    f"🚨 **ENTIRE COMPUTE POOL SATURATED**: All {total_keys} keys hit upstream limits. "
-                    f"Global safety structural freeze clears in **{remaining}s**..."
+                    f"🚨 **POOL SATURATION**: All {total_keys} keys hit upstream throttle limits. "
+                    f"System cooldown clears in **{remaining}s**..."
                 )
                 time.sleep(1)
             status_frame.empty()
