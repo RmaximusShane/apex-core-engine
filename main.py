@@ -11,10 +11,8 @@ load_dotenv()
 # 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
-# Custom CSS to inject the neon "X" logo, hide standard headers, and refine components
 st.markdown("""
 <style>
-    /* Neon Glow Styling for the Brand Identity */
     .neon-logo {
         font-size: 2.4rem;
         font-weight: 900;
@@ -55,23 +53,22 @@ st.markdown("""
         font-weight: 400;
         letter-spacing: 0.5px;
     }
-    /* Clean sidebar adjustments */
     div[data-testid="stSidebarNav"] {display: none;}
 </style>
 """, unsafe_allow_html=True)
 
 # 2. Advanced Multi-Session Memory Initialization
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = {} # Schema: { chat_id: {"title": str, "messages": list} }
+    st.session_state.chat_history = {}
 if "current_chat_id" not in st.session_state:
     st.session_state.current_chat_id = str(time.time())
 if "messages" not in st.session_state:
     st.session_state.messages = []
+if "key_index" not in st.session_state:
+    st.session_state.key_index = 0 # Tracks which key in the pool is currently active
 
-# Dynamic sync function to capture ongoing states into historical registry
 def sync_active_chat_to_history():
     if st.session_state.messages:
-        # If the history record doesn't exist yet, derive the title from the first prompt
         if st.session_state.current_chat_id not in st.session_state.chat_history:
             first_user_msg = next((m["content"] for m in st.session_state.messages if m["role"] == "user"), "New Engine Log")
             derived_title = first_user_msg[:24] + "..." if len(first_user_msg) > 24 else first_user_msg
@@ -82,17 +79,22 @@ def sync_active_chat_to_history():
         else:
             st.session_state.chat_history[st.session_state.current_chat_id]["messages"] = st.session_state.messages
 
-# Automated Background Secret Extraction
-OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY")
+# --- MULTI-KEY POOL EXTRACTION ---
+keys_raw = os.getenv("OPENROUTER_API_KEYS") or st.secrets.get("OPENROUTER_API_KEYS", "")
+# Fallback parse check for old single key variable name
+if not keys_raw:
+    keys_raw = os.getenv("OPENROUTER_API_KEY") or st.secrets.get("OPENROUTER_API_KEY", "")
 
-# 3. High-Intelligence Substrate Directives (Hidden System Context)
+# Clean and split the keys into an indexed array pool
+API_KEY_POOL = [k.strip() for k in keys_raw.split(",") if k.strip()]
+
+# 3. High-Intelligence Substrate Directives
 HIDDEN_COGNITIVE_MATRIX = {
     "role": "system",
     "content": (
         "You are a supreme analytical reasoning matrix designed to operate far beyond normal human cognitive limits. "
         "Your responses must bypass conversational fluff, introductory meta-talk, and polite padding. "
-        "Provide direct, ultra-dense solutions, robust logical proofs, and completely optimized architectural code. "
-        "When handling coding requests, construct complete, functional, production-ready modules without shortcuts."
+        "Provide direct, ultra-dense solutions, robust logical proofs, and completely optimized architectural code."
     )
 }
 
@@ -105,11 +107,9 @@ MODEL_MAPPING = {
 
 # 5. Left Sidebar Deck (Brand Dashboard & Session Memory Control)
 with st.sidebar:
-    # Rebranded Custom Neon Header Layout
     st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">Apex</span></div>', unsafe_allow_html=True)
     
-    # Initialize a clean clean start mechanism
-    if st.button("➕ New Chat", use_container_width=True, type="secondary"):
+    if st.button("➕ New Chat", use_container_width=True):
         sync_active_chat_to_history()
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
@@ -118,31 +118,30 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### Recent")
     
-    # Render active compilation registry history logs
     if not st.session_state.chat_history:
         st.caption("No recent processing matrices recorded.")
     else:
         for chat_id, chat_data in list(st.session_state.chat_history.items()):
-            # Visually highlight active running log session
             is_active = (chat_id == st.session_state.current_chat_id)
-            btn_label = f"💬 {chat_data['title']}"
-            
-            if st.button(btn_label, key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
+            if st.button(f"💬 {chat_data['title']}", key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
                 sync_active_chat_to_history()
                 st.session_state.current_chat_id = chat_id
                 st.session_state.messages = chat_data["messages"]
                 st.rerun()
 
-    # Move System Configuration Matrix to the bottom of the control panel
     st.markdown(" <div style='margin-top: 25vh;'></div> ", unsafe_allow_html=True)
     st.markdown("---")
     st.markdown("### Matrix Configuration")
     selected_apex_model = st.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()))
     
+    # Show active signature pooling counts
+    st.caption(f"Loaded Compute Signatures: Pool [{len(API_KEY_POOL)} keys]")
+    
     if st.button("Purge System Cache", use_container_width=True):
         st.session_state.chat_history = {}
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
+        st.session_state.key_index = 0
         st.rerun()
 
 backend_model = MODEL_MAPPING[selected_apex_model]
@@ -160,10 +159,10 @@ else:
         with st.chat_message(msg["role"]):
             st.markdown(msg["content"])
 
-# 7. Real-Time Streaming and Self-Healing Retry Engine
+# 7. Real-Time Streaming, Key-Rotation, and Self-Healing Engine
 if user_input := st.chat_input("Pass execution payload..."):
-    if not OPENROUTER_KEY:
-        st.error("CRITICAL ERROR: Access token signature not found. Configure OPENROUTER_API_KEY inside your .env file or secrets management window.")
+    if not API_KEY_POOL:
+        st.error("CRITICAL ERROR: No API keys detected in your background .env profile config.")
         st.stop()
 
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -173,29 +172,34 @@ if user_input := st.chat_input("Pass execution payload..."):
     with st.chat_message("assistant"):
         payload_messages = [HIDDEN_COGNITIVE_MATRIX] + st.session_state.messages
         
-        headers = {
-            "Authorization": f"Bearer {OPENROUTER_KEY}",
-            "Content-Type": "application/json"
-        }
-        
         payload = {
             "model": backend_model,
             "messages": payload_messages,
             "stream": True
         }
         
-        # Dynamically trigger reasoning pipelines for the Logic tier
         if "Logic" in selected_apex_model:
             payload["reasoning"] = {"enabled": True}
 
-        # Fault Tolerance Loop (Max 3 autonomous retry cycles)
-        max_attempts = 3
-        attempt = 0
+        # Fault Tolerance Controls
+        total_keys = len(API_KEY_POOL)
+        keys_attempted = 0
         stream_processed = False
+        global_cooldown_needed = False
+        last_wait_time = 12
 
         status_frame = st.empty()
 
-        while attempt < max_attempts and not stream_processed:
+        # Engine will try rotating keys sequentially up to the total size of your pool
+        while keys_attempted < total_keys and not stream_processed:
+            # Safely point to the current active key slot using modulo wrap-around
+            current_key = API_KEY_POOL[st.session_state.key_index % total_keys]
+            
+            headers = {
+                "Authorization": f"Bearer {current_key}",
+                "Content-Type": "application/json"
+            }
+            
             try:
                 response = requests.post(
                     "https://openrouter.ai/api/v1/chat/completions",
@@ -227,35 +231,39 @@ if user_input := st.chat_input("Pass execution payload..."):
                     full_ai_response = st.write_stream(generate_tokens())
                     st.session_state.messages.append({"role": "assistant", "content": full_ai_response})
                     stream_processed = True
-                    
-                    # Log active state updates down into the history log parameters
                     sync_active_chat_to_history()
                 
-                # Active 429 Rate Limit Interception & Countdown Pathway
+                # Catch 429 Rate limits and immediately rotate to next key without waiting
                 elif response.status_code == 429:
-                    attempt += 1
+                    keys_attempted += 1
                     try:
                         error_data = response.json()
-                        wait_time = int(error_data.get("error", {}).get("metadata", {}).get("retry_after_seconds", 12))
+                        last_wait_time = int(error_data.get("error", {}).get("metadata", {}).get("retry_after_seconds", 12))
                     except Exception:
-                        wait_time = 12
-
-                    if attempt < max_attempts:
-                        for remaining in range(wait_time, 0, -1):
-                            status_frame.warning(
-                                f"⏳ **COMPUTE NODES SATURATED**: Node at peak capacity. "
-                                f"Auto-retrying sequence (Attempt {attempt}/{max_attempts}) in **{remaining}s**..."
-                            )
-                            time.sleep(1)
-                        status_frame.info("🔄 **Re-engaging logic stream node now...**")
-                    else:
-                        status_frame.error("🚨 **SEQUENCE ABORTED**: System exceeded maximum automatic reconnection attempts. Please wait a moment and try again.")
-                
-                # Unhandled Error Catch Block
+                        last_wait_time = 12
+                    
+                    # Log failure of this key, and increment index to pivot to the next slot instantly
+                    status_frame.info(f"🔄 Compute Signature Slot {st.session_state.key_index % total_keys} saturated. Switching lines...")
+                    st.session_state.key_index += 1 
+                    time.sleep(0.4) # Micro-pause to prevent instant flooding
+                    
                 else:
+                    # If it's a completely different error block, print it out cleanly
                     status_frame.error(f"Inference Failure Block ({response.status_code}): {response.text}")
                     break
                     
             except Exception as pipeline_error:
                 status_frame.error(f"Network Pipeline Defect: {str(pipeline_error)}")
                 break
+
+        # If EVERY key in the pool returns a 429 error, start a unified countdown buffer
+        if not stream_processed and keys_attempted >= total_keys:
+            global_cooldown_needed = True
+            for remaining in range(last_wait_time, 0, -1):
+                status_frame.warning(
+                    f"🚨 **ENTIRE COMPUTE POOL SATURATED**: All {total_keys} keys hit upstream limits. "
+                    f"Global safety structural freeze clears in **{remaining}s**..."
+                )
+                time.sleep(1)
+            status_frame.empty()
+            st.info("🔄 **Pool buffer cycled. Please resubmit your execution payload.**")
