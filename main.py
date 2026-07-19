@@ -51,6 +51,33 @@ st.markdown("""
         color: #f8fafc !important;
     }
 
+    /* Custom Futuristic Neon Styling for the New Chat Button Container */
+    div.stButton > button {
+        background: transparent !important;
+        color: #00f3ff !important;
+        border: 2px solid #00f3ff !important;
+        border-radius: 10px !important;
+        padding: 10px 20px !important;
+        font-weight: 700 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        transition: all 0.3s ease-in-out !important;
+        box-shadow: 0 0 10px rgba(0, 243, 255, 0.2) !important;
+        width: 100% !important;
+    }
+
+    div.stButton > button:hover {
+        background: linear-gradient(90deg, #00f3ff 0%, #ff00ff 100%) !important;
+        color: #ffffff !important;
+        border: 2px solid transparent !important;
+        box-shadow: 0 0 20px rgba(255, 0, 255, 0.6) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    div.stButton > button:active {
+        transform: scale(0.98) !important;
+    }
+
     /* Minimal Clean Chat Interface */
     div[data-testid="stChatMessage"] {
         background-color: transparent !important;
@@ -155,12 +182,12 @@ HIDDEN_COGNITIVE_MATRIX = {
     )
 }
 
-# 4. Core Performance Model Mapping (Updated live endpoints)
+# 4. Core Performance Model Mapping (Updated 2026 Free Live Tiers)
 MODEL_MAPPING = {
     "🌐 Auto-Shield (Failsafe Free Router)": "openrouter/free",
     "⚡ Apex 2.5 Lite (Fast General Text)": "meta-llama/llama-3.2-3b-instruct:free",
     "🧠 Apex 3.3 Logic (Deep Frontier Reasoning)": "google/gemini-2.5-pro:free",
-    "👑 Apex 3.1 Pro (High-Performance Compute)": "qwen/qwen-2.5-72b-instruct:free"
+    "👑 Apex 3.1 Pro (High-Performance Compute)": "qwen/qwen3-coder:free"
 }
 
 backend_model = MODEL_MAPPING[st.sidebar.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()), index=0)]
@@ -176,7 +203,6 @@ def generate_intelligent_title(user_input_text):
         "Content-Type": "application/json"
     }
     
-    # Payload designed to explicitly force a clean summary title
     summary_payload = {
         "model": "openrouter/free", 
         "messages": [
@@ -194,7 +220,6 @@ def generate_intelligent_title(user_input_text):
     except Exception:
         pass
     
-    # Standard fallback if request slips
     return user_input_text[:20] + "..." if len(user_input_text) > 20 else user_input_text
 
 def sync_active_chat_to_history():
@@ -213,6 +238,7 @@ def sync_active_chat_to_history():
 with st.sidebar:
     st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">APEX</span></div>', unsafe_allow_html=True)
     
+    # Newly Styled Interactive Streamlit Button (Injected with hover scaling and neon gradients above)
     if st.button("➕ New Session", use_container_width=True):
         sync_active_chat_to_history()
         st.session_state.current_chat_id = str(time.time())
@@ -261,7 +287,6 @@ else:
             st.markdown(msg["content"])
 
 # 7. Real-Time Streaming, Key-Rotation, and Self-Healing Engine
-# Disabled entirely while processing state holds True
 input_placeholder = "Input processing instruction payload..." if not st.session_state.is_processing else "Apex is calculating... Please wait."
 user_input = st.chat_input(input_placeholder, disabled=st.session_state.is_processing)
 
@@ -270,14 +295,12 @@ if user_input:
         st.error("CRITICAL ERROR: No API keys detected in your background environment profile configuration.")
         st.stop()
 
-    # Set state locks
     st.session_state.is_processing = True
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.rerun()
 
 # Run actual request loop if process lock was triggered
 if st.session_state.is_processing and st.session_state.messages:
-    # Ensure the user component renders correctly inside state frames
     last_user_msg = st.session_state.messages[-1]["content"]
     
     with st.chat_message("assistant"):
@@ -335,7 +358,6 @@ if st.session_state.is_processing and st.session_state.messages:
                     st.session_state.messages.append({"role": "assistant", "content": full_ai_response})
                     stream_processed = True
                     
-                    # Unlock processing states and calculate history titles elegantly
                     st.session_state.is_processing = False
                     sync_active_chat_to_history()
                     st.rerun()
