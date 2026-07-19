@@ -11,7 +11,7 @@ load_dotenv()
 # 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
-# Custom UI Layout Overrides (Simple White Base + Radiant Neon Accents & Pulsing Sidebar)
+# Custom UI Layout Overrides (Crisp White Base + Radiant Neon Accents & Pulsing Sidebar)
 st.markdown("""
 <style>
     /* Global Page Background Reset to Crisp Clean White */
@@ -135,18 +135,8 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 if "key_index" not in st.session_state:
     st.session_state.key_index = 0 
-
-def sync_active_chat_to_history():
-    if st.session_state.messages:
-        if st.session_state.current_chat_id not in st.session_state.chat_history:
-            first_user_msg = next((m["content"] for m in st.session_state.messages if m["role"] == "user"), "New Matrix Build")
-            derived_title = first_user_msg[:24] + "..." if len(first_user_msg) > 24 else first_user_msg
-            st.session_state.chat_history[st.session_state.current_chat_id] = {
-                "title": derived_title,
-                "messages": st.session_state.messages
-            }
-        else:
-            st.session_state.chat_history[st.session_state.current_chat_id]["messages"] = st.session_state.messages
+if "is_processing" not in st.session_state:
+    st.session_state.is_processing = False
 
 # --- MULTI-KEY POOL EXTRACTION ---
 keys_raw = os.getenv("OPENROUTER_API_KEYS") or st.secrets.get("OPENROUTER_API_KEYS", "")
@@ -165,13 +155,59 @@ HIDDEN_COGNITIVE_MATRIX = {
     )
 }
 
-# 4. Core Performance Model Mapping (Updated 2026 Live Free Slots)
+# 4. Core Performance Model Mapping (Updated live endpoints)
 MODEL_MAPPING = {
     "🌐 Auto-Shield (Failsafe Free Router)": "openrouter/free",
-    "⚡ Apex 2.5 Lite (Fast General Text)": "openai/gpt-oss-20b:free",
-    "🧠 Apex 3.3 Logic (Deep Frontier Reasoning)": "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "👑 Apex 3.1 Pro (Advanced Code Agent)": "cohere/north-mini-code:free"
+    "⚡ Apex 2.5 Lite (Fast General Text)": "meta-llama/llama-3.2-3b-instruct:free",
+    "🧠 Apex 3.3 Logic (Deep Frontier Reasoning)": "google/gemini-2.5-pro:free",
+    "👑 Apex 3.1 Pro (High-Performance Compute)": "qwen/qwen-2.5-72b-instruct:free"
 }
+
+backend_model = MODEL_MAPPING[st.sidebar.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()), index=0)]
+
+# Background summary generation function for clean titles
+def generate_intelligent_title(user_input_text):
+    if not API_KEY_POOL:
+        return "New Session Matrix"
+    
+    current_key = API_KEY_POOL[st.session_state.key_index % len(API_KEY_POOL)]
+    headers = {
+        "Authorization": f"Bearer {current_key}",
+        "Content-Type": "application/json"
+    }
+    
+    # Payload designed to explicitly force a clean summary title
+    summary_payload = {
+        "model": "openrouter/free", 
+        "messages": [
+            {"role": "system", "content": "You are a phrase synthesizer. Summarize the user's input into an elegant, clear 2 to 4 word chat title. Do not include quotes, formatting, punctuation, or explanations. Respond with only the summary phrase."},
+            {"role": "user", "content": user_input_text}
+        ],
+        "stream": False
+    }
+    
+    try:
+        res = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, data=json.dumps(summary_payload), timeout=5)
+        if res.status_code == 200:
+            title_text = res.json()["choices"][0]["message"]["content"].strip()
+            return title_text if title_text else "New Session Matrix"
+    except Exception:
+        pass
+    
+    # Standard fallback if request slips
+    return user_input_text[:20] + "..." if len(user_input_text) > 20 else user_input_text
+
+def sync_active_chat_to_history():
+    if st.session_state.messages:
+        if st.session_state.current_chat_id not in st.session_state.chat_history:
+            first_user_msg = next((m["content"] for m in st.session_state.messages if m["role"] == "user"), "New Matrix Build")
+            derived_title = generate_intelligent_title(first_user_msg)
+            st.session_state.chat_history[st.session_state.current_chat_id] = {
+                "title": derived_title,
+                "messages": st.session_state.messages
+            }
+        else:
+            st.session_state.chat_history[st.session_state.current_chat_id]["messages"] = st.session_state.messages
 
 # 5. Left Sidebar Deck (Brand Dashboard & Session Memory Control)
 with st.sidebar:
@@ -181,6 +217,7 @@ with st.sidebar:
         sync_active_chat_to_history()
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
+        st.session_state.is_processing = False
         st.rerun()
         
     st.markdown("---")
@@ -195,13 +232,11 @@ with st.sidebar:
                 sync_active_chat_to_history()
                 st.session_state.current_chat_id = chat_id
                 st.session_state.messages = chat_data["messages"]
+                st.session_state.is_processing = False
                 st.rerun()
 
-    st.markdown(" <div style='margin-top: 25vh;'></div> ", unsafe_allow_html=True)
+    st.markdown(" <div style='margin-top: 20vh;'></div> ", unsafe_allow_html=True)
     st.markdown("---")
-    st.markdown("### Compute Mapping")
-    selected_apex_model = st.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()))
-    
     st.caption(f"Signatures Available: Pool [{len(API_KEY_POOL)} keys]")
     
     if st.button("Purge Engine Memory", use_container_width=True):
@@ -209,9 +244,8 @@ with st.sidebar:
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
         st.session_state.key_index = 0
+        st.session_state.is_processing = False
         st.rerun()
-
-backend_model = MODEL_MAPPING[selected_apex_model]
 
 # 6. Main Viewport Render Engine
 if not st.session_state.messages:
@@ -227,15 +261,25 @@ else:
             st.markdown(msg["content"])
 
 # 7. Real-Time Streaming, Key-Rotation, and Self-Healing Engine
-if user_input := st.chat_input("Input processing instruction payload..."):
+# Disabled entirely while processing state holds True
+input_placeholder = "Input processing instruction payload..." if not st.session_state.is_processing else "Apex is calculating... Please wait."
+user_input = st.chat_input(input_placeholder, disabled=st.session_state.is_processing)
+
+if user_input:
     if not API_KEY_POOL:
         st.error("CRITICAL ERROR: No API keys detected in your background environment profile configuration.")
         st.stop()
 
+    # Set state locks
+    st.session_state.is_processing = True
     st.session_state.messages.append({"role": "user", "content": user_input})
-    with st.chat_message("user"):
-        st.markdown(user_input)
+    st.rerun()
 
+# Run actual request loop if process lock was triggered
+if st.session_state.is_processing and st.session_state.messages:
+    # Ensure the user component renders correctly inside state frames
+    last_user_msg = st.session_state.messages[-1]["content"]
+    
     with st.chat_message("assistant"):
         payload_messages = [HIDDEN_COGNITIVE_MATRIX] + st.session_state.messages
         
@@ -244,14 +288,10 @@ if user_input := st.chat_input("Input processing instruction payload..."):
             "messages": payload_messages,
             "stream": True
         }
-        
-        if "Logic" in selected_apex_model:
-            payload["reasoning"] = {"enabled": True}
 
         total_keys = len(API_KEY_POOL)
         keys_attempted = 0
         stream_processed = False
-        global_cooldown_needed = False
         last_wait_time = 12
 
         status_frame = st.empty()
@@ -294,7 +334,11 @@ if user_input := st.chat_input("Input processing instruction payload..."):
                     full_ai_response = st.write_stream(generate_tokens())
                     st.session_state.messages.append({"role": "assistant", "content": full_ai_response})
                     stream_processed = True
+                    
+                    # Unlock processing states and calculate history titles elegantly
+                    st.session_state.is_processing = False
                     sync_active_chat_to_history()
+                    st.rerun()
                 
                 elif response.status_code == 429:
                     keys_attempted += 1
@@ -310,14 +354,15 @@ if user_input := st.chat_input("Input processing instruction payload..."):
                     
                 else:
                     status_frame.error(f"Inference Failure Block ({response.status_code}): {response.text}")
+                    st.session_state.is_processing = False
                     break
                     
             except Exception as pipeline_error:
                 status_frame.error(f"Network Pipeline Defect: {str(pipeline_error)}")
+                st.session_state.is_processing = False
                 break
 
         if not stream_processed and keys_attempted >= total_keys:
-            global_cooldown_needed = True
             for remaining in range(last_wait_time, 0, -1):
                 status_frame.warning(
                     f"🚨 **POOL SATURATION**: All {total_keys} keys hit upstream throttle limits. "
@@ -325,4 +370,6 @@ if user_input := st.chat_input("Input processing instruction payload..."):
                 )
                 time.sleep(1)
             status_frame.empty()
+            st.session_state.is_processing = False
             st.info("🔄 **Pool buffer cycled. Please resubmit your execution payload.**")
+            st.rerun()
