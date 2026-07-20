@@ -343,7 +343,7 @@ MODEL_MAPPING = {
     "🧠 Apex 3.3 Logic (Advanced Reasoning, Core analysis and Analytical Thinking)": "tencent/hy3:free",
     "👑 Apex 3.1 pro Coding Core (Advanced Coding and Agentic Workflow)": "poolside/laguna-m.1:free",
     "⚡ Apex 2.5 Ultra (Extended Thinking)": "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "🔮 Open-Weight Reasoning (Apex OSS)": "qwen/qwen3-coder:free"
+    "🔮 Open-Weight Reasoning (Apex OSS)": "openrouter/free"
 }
 
 backend_model = MODEL_MAPPING[st.sidebar.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()), index=0)]
