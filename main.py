@@ -11,15 +11,49 @@ load_dotenv()
 # 1. Page Configuration & Fluid UI Styling
 st.set_page_config(page_title="Apex AI", layout="wide")
 
-# Custom UI Layout Overrides (Crisp White Base + Radiant Neon Accents & Pulsing Sidebar)
+# Custom UI Layout Overrides (Ice-Blue Snowfall Particles, Gemini-Style Navigation & Grok Reasoning Visuals)
 st.markdown("""
 <style>
     /* Global Page Background Reset to Crisp Clean White */
     .stApp {
-        background-color: #ffffff !important;
+        background-color: #f8fafc !important;
         color: #0f172a !important;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
+
+    /* Floating Soft Light-Blue Snowflakes Background Animation */
+    .snowflake {
+        color: rgba(0, 180, 216, 0.25);
+        font-size: 1.2em;
+        font-family: Arial, sans-serif;
+        text-shadow: 0 0 5px rgba(0, 180, 216, 0.15);
+        position: fixed;
+        top: -10%;
+        z-index: 0;
+        user-select: none;
+        cursor: default;
+        animation: snowflakes-fall 12s linear infinite, snowflakes-shake 4s ease-in-out infinite;
+    }
+
+    @keyframes snowflakes-fall {
+        0% { top: -10%; }
+        100% { top: 100%; }
+    }
+
+    @keyframes snowflakes-shake {
+        0%, 100% { transform: translateX(0); }
+        50% { transform: translateX(40px); }
+    }
+
+    .snowflake:nth-of-type(1) { left: 10%; animation-delay: 0s, 0s; }
+    .snowflake:nth-of-type(2) { left: 20%; animation-delay: 2s, 1s; }
+    .snowflake:nth-of-type(3) { left: 30%; animation-delay: 4s, 2s; }
+    .snowflake:nth-of-type(4) { left: 40%; animation-delay: 1s, 1s; }
+    .snowflake:nth-of-type(5) { left: 50%; animation-delay: 6s, 3s; }
+    .snowflake:nth-of-type(6) { left: 60%; animation-delay: 3s, 2s; }
+    .snowflake:nth-of-type(7) { left: 70%; animation-delay: 7s, 1s; }
+    .snowflake:nth-of-type(8) { left: 80%; animation-delay: 5s, 2.5s; }
+    .snowflake:nth-of-type(9) { left: 90%; animation-delay: 1.5s, 1.5s; }
 
     /* Keyframes for Moving/Pulsing Neon Sidebar Glow */
     @keyframes neonPulse {
@@ -44,6 +78,14 @@ st.markdown("""
         transition: all 0.5s ease;
     }
     
+    /* Sidebar Input Search Field Styling */
+    section[data-testid="stSidebar"] input {
+        background-color: #111827 !important;
+        color: #f8fafc !important;
+        border: 1px solid #1e293b !important;
+        border-radius: 8px !important;
+    }
+
     /* Ensure text inside dark sidebar remains perfectly legible */
     section[data-testid="stSidebar"] p, 
     section[data-testid="stSidebar"] h3, 
@@ -51,7 +93,7 @@ st.markdown("""
         color: #f8fafc !important;
     }
 
-    /* Custom Futuristic Neon Styling for the New Chat Button Container */
+    /* Custom Futuristic Neon Styling for Action Buttons */
     div.stButton > button {
         background: transparent !important;
         color: #00f3ff !important;
@@ -86,6 +128,8 @@ st.markdown("""
         border-radius: 0px !important;
         margin-bottom: 0px !important;
         padding: 24px 16px !important;
+        position: relative;
+        z-index: 1;
     }
     
     /* Elegant Highlight For Text Fields */
@@ -103,6 +147,34 @@ st.markdown("""
         border: 2px solid #0f172a !important;
         border-radius: 8px !important;
         font-weight: 600;
+    }
+
+    /* Grok-Style Thinking Block Animation & Styling */
+    .grok-thinking-box {
+        border-left: 3px solid #00f3ff;
+        background-color: #f1f5f9;
+        padding: 10px 16px;
+        border-radius: 0 8px 8px 0;
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #475569;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .thinking-spinner {
+        width: 10px;
+        height: 10px;
+        background-color: #00f3ff;
+        border-radius: 50%;
+        animation: pulseDots 1.2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDots {
+        0%, 100% { transform: scale(0.6); opacity: 0.4; }
+        50% { transform: scale(1.2); opacity: 1; }
     }
 
     /* Bold Elegant Neon Branding Elements */
@@ -139,7 +211,9 @@ st.markdown("""
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: 20vh;
+        margin-top: 15vh;
+        position: relative;
+        z-index: 1;
     }
     .subtitle {
         color: #475569;
@@ -151,6 +225,17 @@ st.markdown("""
     }
     div[data-testid="stSidebarNav"] {display: none;}
 </style>
+
+<!-- Background Ambient Snowflake Layer -->
+<div class="snowflake">❄</div>
+<div class="snowflake">❅</div>
+<div class="snowflake">❆</div>
+<div class="snowflake">❄</div>
+<div class="snowflake">❅</div>
+<div class="snowflake">❆</div>
+<div class="snowflake">❄</div>
+<div class="snowflake">❅</div>
+<div class="snowflake">❆</div>
 """, unsafe_allow_html=True)
 
 # 2. Memory State Engine Check
@@ -164,6 +249,8 @@ if "key_index" not in st.session_state:
     st.session_state.key_index = 0 
 if "is_processing" not in st.session_state:
     st.session_state.is_processing = False
+if "notebook_content" not in st.session_state:
+    st.session_state.notebook_content = ""
 
 # --- MULTI-KEY POOL EXTRACTION ---
 keys_raw = os.getenv("OPENROUTER_API_KEYS") or st.secrets.get("OPENROUTER_API_KEYS", "")
@@ -235,11 +322,11 @@ def sync_active_chat_to_history():
         else:
             st.session_state.chat_history[st.session_state.current_chat_id]["messages"] = st.session_state.messages
 
-# 5. Left Sidebar Deck (Brand Dashboard & Session Memory Control)
+# 5. Left Sidebar Deck (Brand Dashboard, Session Search, Gemini Notebook & Memory Control)
 with st.sidebar:
     st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">APEX</span></div>', unsafe_allow_html=True)
     
-    if st.button("➕ New Session", use_container_width=True):
+    if st.button("➕ New Chat", use_container_width=True):
         sync_active_chat_to_history()
         st.session_state.current_chat_id = str(time.time())
         st.session_state.messages = []
@@ -247,21 +334,55 @@ with st.sidebar:
         st.rerun()
         
     st.markdown("---")
-    st.markdown("### Recent Signatures")
     
-    if not st.session_state.chat_history:
-        st.caption("No active sessions cached.")
-    else:
-        for chat_id, chat_data in list(st.session_state.chat_history.items()):
-            is_active = (chat_id == st.session_state.current_chat_id)
-            if st.button(f"⚡ {chat_data['title']}", key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
-                sync_active_chat_to_history()
-                st.session_state.current_chat_id = chat_id
-                st.session_state.messages = chat_data["messages"]
-                st.session_state.is_processing = False
+    # Gemini-style Sidebar Navigation Tabs (Chats vs Notebook)
+    sidebar_tab1, sidebar_tab2 = st.tabs(["💬 Chats", "📓 Notebook"])
+    
+    with sidebar_tab1:
+        # Search Chats Feature
+        search_query = st.text_input("🔍 Search Chats", placeholder="Filter signatures...", label_visibility="collapsed")
+        
+        st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+        
+        if not st.session_state.chat_history:
+            st.caption("No active sessions cached.")
+        else:
+            filtered_sessions = {
+                cid: cdata for cid, cdata in st.session_state.chat_history.items()
+                if search_query.lower() in cdata["title"].lower()
+            }
+            
+            if not filtered_sessions:
+                st.caption("No matching signatures found.")
+            else:
+                for chat_id, chat_data in list(filtered_sessions.items()):
+                    is_active = (chat_id == st.session_state.current_chat_id)
+                    if st.button(f"⚡ {chat_data['title']}", key=f"session_{chat_id}", use_container_width=True, type="primary" if is_active else "secondary"):
+                        sync_active_chat_to_history()
+                        st.session_state.current_chat_id = chat_id
+                        st.session_state.messages = chat_data["messages"]
+                        st.session_state.is_processing = False
+                        st.rerun()
+
+    with sidebar_tab2:
+        st.caption("Central Scratchpad & Context Builder")
+        st.session_state.notebook_content = st.text_area(
+            "Scratchpad",
+            value=st.session_state.notebook_content,
+            height=250,
+            placeholder="Type notes, code snippets, or global system rules here...",
+            label_visibility="collapsed"
+        )
+        if st.button("📋 Attach Note to Prompt", use_container_width=True):
+            if st.session_state.notebook_content.strip():
+                st.session_state.messages.append({
+                    "role": "user", 
+                    "content": f"[NOTEBOOK CONTEXT]:\n{st.session_state.notebook_content}"
+                })
+                st.toast("Notebook context attached to chat stream!", icon="📝")
                 st.rerun()
 
-    st.markdown(" <div style='margin-top: 20vh;'></div> ", unsafe_allow_html=True)
+    st.markdown(" <div style='margin-top: 10vh;'></div> ", unsafe_allow_html=True)
     st.markdown("---")
     st.caption(f"Signatures Available: Pool [{len(API_KEY_POOL)} keys]")
     
@@ -271,6 +392,7 @@ with st.sidebar:
         st.session_state.messages = []
         st.session_state.key_index = 0
         st.session_state.is_processing = False
+        st.session_state.notebook_content = ""
         st.rerun()
 
 # 6. Main Viewport Render Engine
@@ -284,9 +406,12 @@ if not st.session_state.messages:
 else:
     for msg in st.session_state.messages:
         with st.chat_message(msg["role"]):
+            if "thought_duration" in msg and msg["thought_duration"] > 0:
+                with st.expander(f"Thought for {msg['thought_duration']} secs", expanded=False):
+                    st.caption("Deep analytical reasoning matrix evaluated parameters prior to generating final output payload.")
             st.markdown(msg["content"])
 
-# 7. Real-Time Streaming, Key-Rotation, and Self-Healing Engine
+# 7. Real-Time Streaming, Grok Reasoning Container, Key-Rotation, and Self-Healing Engine
 input_placeholder = "Input processing instruction payload..." if not st.session_state.is_processing else "Apex is calculating... Please wait."
 user_input = st.chat_input(input_placeholder, disabled=st.session_state.is_processing)
 
@@ -304,6 +429,10 @@ if st.session_state.is_processing and st.session_state.messages:
     last_user_msg = st.session_state.messages[-1]["content"]
     
     with st.chat_message("assistant"):
+        # Grok-Style Thinking Live Visual Container
+        think_placeholder = st.empty()
+        start_time = time.time()
+        
         payload_messages = [HIDDEN_COGNITIVE_MATRIX] + st.session_state.messages
         
         payload = {
@@ -328,6 +457,13 @@ if st.session_state.is_processing and st.session_state.messages:
             }
             
             try:
+                # Live dynamic pulse indicator while waiting for first response byte
+                elapsed_thinking = int(time.time() - start_time)
+                think_placeholder.markdown(
+                    f'<div class="grok-thinking-box"><div class="thinking-spinner"></div>Thinking... ({elapsed_thinking}s)</div>', 
+                    unsafe_allow_html=True
+                )
+
                 response = requests.post(
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers=headers,
@@ -354,10 +490,23 @@ if st.session_state.is_processing and st.session_state.messages:
                                     except Exception:
                                         continue
 
-                    full_ai_response = st.write_stream(generate_tokens())
-                    st.session_state.messages.append({"role": "assistant", "content": full_ai_response})
-                    stream_processed = True
+                    # Finalize thinking time computation (Grok Style)
+                    final_thinking_time = max(1, int(time.time() - start_time))
+                    think_placeholder.empty()
                     
+                    with st.expander(f"Thought for {final_thinking_time} secs", expanded=False):
+                        st.caption("Deep analytical reasoning matrix evaluated parameters prior to generating final output payload.")
+
+                    full_ai_response = st.write_stream(generate_tokens())
+                    
+                    # Store assistant message with thinking metadata
+                    st.session_state.messages.append({
+                        "role": "assistant", 
+                        "content": full_ai_response,
+                        "thought_duration": final_thinking_time
+                    })
+                    
+                    stream_processed = True
                     st.session_state.is_processing = False
                     sync_active_chat_to_history()
                     st.rerun()
@@ -375,16 +524,19 @@ if st.session_state.is_processing and st.session_state.messages:
                     time.sleep(0.4)
                     
                 else:
+                    think_placeholder.empty()
                     status_frame.error(f"Inference Failure Block ({response.status_code}): {response.text}")
                     st.session_state.is_processing = False
                     break
                     
             except Exception as pipeline_error:
+                think_placeholder.empty()
                 status_frame.error(f"Network Pipeline Defect: {str(pipeline_error)}")
                 st.session_state.is_processing = False
                 break
 
         if not stream_processed and keys_attempted >= total_keys:
+            think_placeholder.empty()
             for remaining in range(last_wait_time, 0, -1):
                 status_frame.warning(
                     f"🚨 **POOL SATURATION**: All {total_keys} keys hit upstream throttle limits. "
