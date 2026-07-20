@@ -182,13 +182,13 @@ HIDDEN_COGNITIVE_MATRIX = {
     )
 }
 
-# 4. Core Performance Model Mapping (100% Active Free Tiers with Abstract Tech Designators)
+# 4. Core Performance Model Mapping (100% Active Free Tiers)
 MODEL_MAPPING = {
-    "🌐 Auto-Shield (Failsafe Free Router)": "openrouter/free",
-    "🧠 Deep Logic Substrate (Tencent)": "tencent/hy3:free",
-    "👑 Agentic Coding Flagship (Poolside)": "poolside/laguna-m.1:free",
-    "⚡ Advanced Reasoning Matrix (Nemotron)": "nvidia/nemotron-3-ultra-550b-a55b:free",
-    "🔮 High-Capacity Analytics (Llama 70B)": "meta-llama/llama-3.3-70b-instruct:free"
+    "🌐 Apex 2.5 Lite (Fastest Executions and All Round help)": "openrouter/free",
+    "🧠 Apex 3.3 Logic (Advanced Reasoning, Core analysis and Analytical Thinking)": "tencent/hy3:free",
+    "👑 Apex 3.1 pro Coding Core (Advanced Coding and Agentic Workflow)": "poolside/laguna-m.1:free",
+    "⚡ Apex 2.5 Ultra (Extended Thinking)": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "🔮 Open-Weight Reasoning (Apex OSS)": "qwen/qwen3-coder:free"
 }
 
 backend_model = MODEL_MAPPING[st.sidebar.selectbox("Active Compute Tier", list(MODEL_MAPPING.keys()), index=0)]
