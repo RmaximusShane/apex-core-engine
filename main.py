@@ -9,9 +9,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # 1. Page Configuration & Fluid UI Styling
-st.set_page_config(page_title="Apex AI", layout="wide")
+st.set_page_config(
+    page_title="Apex AI", 
+    layout="wide", 
+    initial_sidebar_state="expanded"
+)
 
-# Custom UI Layout Overrides (Ice-Blue Snowfall Particles, Gemini-Style Navigation & Grok Reasoning Visuals)
+# Custom UI Layout Overrides (Responsive Grid + Snowfall Particles + Grok Thinking + Gemini Sidebar & Notebook)
 st.markdown("""
 <style>
     /* Global Page Background Reset to Crisp Clean White */
@@ -23,7 +27,7 @@ st.markdown("""
 
     /* Floating Soft Light-Blue Snowflakes Background Animation */
     .snowflake {
-        color: rgba(0, 180, 216, 0.25);
+        color: rgba(0, 180, 216, 0.22);
         font-size: 1.2em;
         font-family: Arial, sans-serif;
         text-shadow: 0 0 5px rgba(0, 180, 216, 0.15);
@@ -42,18 +46,18 @@ st.markdown("""
 
     @keyframes snowflakes-shake {
         0%, 100% { transform: translateX(0); }
-        50% { transform: translateX(40px); }
+        50% { transform: translateX(30px); }
     }
 
-    .snowflake:nth-of-type(1) { left: 10%; animation-delay: 0s, 0s; }
-    .snowflake:nth-of-type(2) { left: 20%; animation-delay: 2s, 1s; }
-    .snowflake:nth-of-type(3) { left: 30%; animation-delay: 4s, 2s; }
-    .snowflake:nth-of-type(4) { left: 40%; animation-delay: 1s, 1s; }
-    .snowflake:nth-of-type(5) { left: 50%; animation-delay: 6s, 3s; }
-    .snowflake:nth-of-type(6) { left: 60%; animation-delay: 3s, 2s; }
-    .snowflake:nth-of-type(7) { left: 70%; animation-delay: 7s, 1s; }
-    .snowflake:nth-of-type(8) { left: 80%; animation-delay: 5s, 2.5s; }
-    .snowflake:nth-of-type(9) { left: 90%; animation-delay: 1.5s, 1.5s; }
+    .snowflake:nth-of-type(1) { left: 5%; animation-delay: 0s, 0s; }
+    .snowflake:nth-of-type(2) { left: 15%; animation-delay: 2s, 1s; }
+    .snowflake:nth-of-type(3) { left: 28%; animation-delay: 4s, 2s; }
+    .snowflake:nth-of-type(4) { left: 42%; animation-delay: 1s, 1s; }
+    .snowflake:nth-of-type(5) { left: 55%; animation-delay: 6s, 3s; }
+    .snowflake:nth-of-type(6) { left: 68%; animation-delay: 3s, 2s; }
+    .snowflake:nth-of-type(7) { left: 78%; animation-delay: 7s, 1s; }
+    .snowflake:nth-of-type(8) { left: 88%; animation-delay: 5s, 2.5s; }
+    .snowflake:nth-of-type(9) { left: 95%; animation-delay: 1.5s, 1.5s; }
 
     /* Keyframes for Moving/Pulsing Neon Sidebar Glow */
     @keyframes neonPulse {
@@ -75,11 +79,11 @@ st.markdown("""
     section[data-testid="stSidebar"] {
         background-color: #070a13 !important;
         animation: neonPulse 6s infinite ease-in-out;
-        transition: all 0.5s ease;
+        transition: all 0.3s ease;
     }
     
     /* Sidebar Input Search Field Styling */
-    section[data-testid="stSidebar"] input {
+    section[data-testid="stSidebar"] input, section[data-testid="stSidebar"] textarea {
         background-color: #111827 !important;
         color: #f8fafc !important;
         border: 1px solid #1e293b !important;
@@ -99,13 +103,14 @@ st.markdown("""
         color: #00f3ff !important;
         border: 2px solid #00f3ff !important;
         border-radius: 10px !important;
-        padding: 10px 20px !important;
+        padding: 8px 16px !important;
         font-weight: 700 !important;
-        letter-spacing: 1px !important;
+        letter-spacing: 0.8px !important;
         text-transform: uppercase !important;
         transition: all 0.3s ease-in-out !important;
         box-shadow: 0 0 10px rgba(0, 243, 255, 0.2) !important;
         width: 100% !important;
+        font-size: 0.9rem !important;
     }
 
     div.stButton > button:hover {
@@ -120,24 +125,26 @@ st.markdown("""
         transform: scale(0.98) !important;
     }
 
-    /* Minimal Clean Chat Interface */
+    /* Minimal Clean Chat Interface & Fluid Width Containers */
     div[data-testid="stChatMessage"] {
         background-color: transparent !important;
         border: none !important;
         border-bottom: 1px solid #e2e8f0 !important;
         border-radius: 0px !important;
         margin-bottom: 0px !important;
-        padding: 24px 16px !important;
+        padding: 20px 12px !important;
         position: relative;
         z-index: 1;
+        max-width: 100% !important;
     }
     
-    /* Elegant Highlight For Text Fields */
+    /* Text Typography Adjustments */
     div[data-testid="stChatMessage"] p {
-        font-size: 1.05rem;
+        font-size: 1rem;
         line-height: 1.6;
         color: #0f172a !important;
         font-weight: 500;
+        word-break: break-word;
     }
 
     /* Input Frame Adjustments */
@@ -153,15 +160,17 @@ st.markdown("""
     .grok-thinking-box {
         border-left: 3px solid #00f3ff;
         background-color: #f1f5f9;
-        padding: 10px 16px;
+        padding: 8px 14px;
         border-radius: 0 8px 8px 0;
         font-family: monospace;
-        font-size: 0.9rem;
+        font-size: 0.88rem;
         color: #475569;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
         display: flex;
         align-items: center;
         gap: 10px;
+        width: fit-content;
+        max-width: 100%;
     }
 
     .thinking-spinner {
@@ -170,6 +179,7 @@ st.markdown("""
         background-color: #00f3ff;
         border-radius: 50%;
         animation: pulseDots 1.2s infinite ease-in-out;
+        flex-shrink: 0;
     }
 
     @keyframes pulseDots {
@@ -179,15 +189,15 @@ st.markdown("""
 
     /* Bold Elegant Neon Branding Elements */
     .neon-logo {
-        font-size: 2.6rem;
+        font-size: 2.2rem;
         font-weight: 900;
         color: #ffffff;
         text-shadow: 0 0 8px #00f3ff, 0 0 15px #00f3ff;
         font-family: 'Courier New', Courier, monospace;
-        margin-right: 12px;
+        margin-right: 10px;
     }
     .brand-title {
-        font-size: 1.8rem;
+        font-size: 1.6rem;
         font-weight: 800;
         color: #ffffff;
         letter-spacing: 1px;
@@ -196,7 +206,7 @@ st.markdown("""
 
     /* High-Impact Neon Text Gradients on Main Screen */
     .apex-glow {
-        font-size: 4rem;
+        font-size: clamp(2rem, 6vw, 4rem);
         font-weight: 900;
         background: linear-gradient(90deg, #00f3ff 0%, #ff00ff 100%);
         -webkit-background-clip: text;
@@ -211,19 +221,77 @@ st.markdown("""
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        margin-top: 15vh;
+        margin-top: 12vh;
         position: relative;
         z-index: 1;
+        padding: 0 15px;
     }
     .subtitle {
         color: #475569;
         text-align: center;
-        font-size: 1.3rem;
+        font-size: clamp(0.95rem, 2.5vw, 1.3rem);
         font-weight: 700;
         letter-spacing: 0.5px;
         margin-top: 10px;
     }
     div[data-testid="stSidebarNav"] {display: none;}
+
+    /* ==========================================================================
+       RESPONSIVE MEDIA QUERIES FOR ALL SCREEN TYPES (PHONE, TABLET, LAPTOP, TV)
+       ========================================================================== */
+
+    /* Mobile Phones (Portrait & Landscape: 320px to 640px) */
+    @media screen and (max-width: 640px) {
+        .block-container {
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+            padding-top: 1rem !important;
+        }
+        div[data-testid="stChatMessage"] {
+            padding: 14px 6px !important;
+        }
+        div[data-testid="stChatMessage"] p {
+            font-size: 0.95rem !important;
+        }
+        .neon-logo {
+            font-size: 1.8rem !important;
+        }
+        .brand-title {
+            font-size: 1.3rem !important;
+        }
+        div.stButton > button {
+            padding: 6px 10px !important;
+            font-size: 0.8rem !important;
+        }
+        .welcome-container {
+            margin-top: 6vh !important;
+        }
+    }
+
+    /* Tablets & Foldables (641px to 1024px) */
+    @media screen and (min-width: 641px) and (max-width: 1024px) {
+        .block-container {
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+        }
+        div[data-testid="stChatMessage"] p {
+            font-size: 1rem !important;
+        }
+    }
+
+    /* Large Screens & Smart TVs (1920px and above) */
+    @media screen and (min-width: 1920px) {
+        .block-container {
+            max-width: 1400px !important;
+            margin: 0 auto !important;
+        }
+        div[data-testid="stChatMessage"] p {
+            font-size: 1.2rem !important;
+        }
+        .subtitle {
+            font-size: 1.6rem !important;
+        }
+    }
 </style>
 
 <!-- Background Ambient Snowflake Layer -->
@@ -324,7 +392,7 @@ def sync_active_chat_to_history():
 
 # 5. Left Sidebar Deck (Brand Dashboard, Session Search, Gemini Notebook & Memory Control)
 with st.sidebar:
-    st.markdown('<div style="display: flex; align-items: center; margin-bottom: 25px;"><span class="neon-logo">X</span><span class="brand-title">APEX</span></div>', unsafe_allow_html=True)
+    st.markdown('<div style="display: flex; align-items: center; margin-bottom: 20px;"><span class="neon-logo">X</span><span class="brand-title">APEX</span></div>', unsafe_allow_html=True)
     
     if st.button("➕ New Chat", use_container_width=True):
         sync_active_chat_to_history()
@@ -342,7 +410,7 @@ with st.sidebar:
         # Search Chats Feature
         search_query = st.text_input("🔍 Search Chats", placeholder="Filter signatures...", label_visibility="collapsed")
         
-        st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='margin-top: 8px;'></div>", unsafe_allow_html=True)
         
         if not st.session_state.chat_history:
             st.caption("No active sessions cached.")
@@ -369,7 +437,7 @@ with st.sidebar:
         st.session_state.notebook_content = st.text_area(
             "Scratchpad",
             value=st.session_state.notebook_content,
-            height=250,
+            height=220,
             placeholder="Type notes, code snippets, or global system rules here...",
             label_visibility="collapsed"
         )
@@ -382,7 +450,7 @@ with st.sidebar:
                 st.toast("Notebook context attached to chat stream!", icon="📝")
                 st.rerun()
 
-    st.markdown(" <div style='margin-top: 10vh;'></div> ", unsafe_allow_html=True)
+    st.markdown(" <div style='margin-top: 6vh;'></div> ", unsafe_allow_html=True)
     st.markdown("---")
     st.caption(f"Signatures Available: Pool [{len(API_KEY_POOL)} keys]")
     
